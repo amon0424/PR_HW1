@@ -1,3 +1,6 @@
+#ifndef _CLASS_H
+#define _CLASS_H
+
 #include <opencv/cv.h>
 #include <vector>
 #include <iostream>
@@ -23,6 +26,7 @@ class Class
 public:
 	CvMat* Mean;
 	CvMat* CovarianceMatrix;
+	float Probability;
 	int ID;
 
 	Class(int id, int numberOfFeatures)
@@ -46,7 +50,7 @@ public:
 		std::cout << std::endl;
 	}
 
-	void AddTranningData(FeatureVector* featureVector)
+	void AddTrainingData(FeatureVector* featureVector)
 	{
 		_tranningData.push_back(featureVector);
 	}
@@ -133,3 +137,5 @@ public:
 		}
 	}
 };
+
+#endif

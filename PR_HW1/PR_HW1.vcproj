@@ -177,6 +177,10 @@
 				RelativePath=".\main.cpp"
 				>
 			</File>
+			<File
+				RelativePath=".\TrainingData.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="¼ÐÀYÀÉ"
@@ -189,6 +193,14 @@
 			</File>
 			<File
 				RelativePath=".\Class.h"
+				>
+			</File>
+			<File
+				RelativePath=".\GaussianPdf.h"
+				>
+			</File>
+			<File
+				RelativePath=".\TrainingData.h"
 				>
 			</File>
 		</Filter>
