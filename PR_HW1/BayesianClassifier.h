@@ -3,154 +3,152 @@
 #include <iostream>
 #include <vector>
 #include "Class.h"
-#include "TrainingData.h"
+#include "Classifier.h"
+#include "GaussianPdf.h"
+#include "Utility.h"
 
 using std::string;
 
-class BayesianClassifier 
+class BayesianClassifier : public Classifier
 {
-	std::vector<FeatureVector*> _tranningData;
 	std::vector<Class> _classes;
-
+	std::vector<GaussianPdf> _classesPdf;
 public:
-	int NumberOfClasses;
 	int NumberOfFeatures;
 
-	BayesianClassifier()
+	BayesianClassifier(int numberOfFeatures) : NumberOfFeatures(numberOfFeatures)
 	{
 		
 	}
 
 	~BayesianClassifier()
 	{
-		for(int i=0; i < NumberOfClasses; i++)
+		for(int i=0; i < _classesPdf.size(); i++)
 		{
-			_classes[i].Release();
+			_classesPdf[i].Delete();
 		}
 	}
 
 	void PrintClassesInformation()
 	{	
-		for(int i=0; i < NumberOfClasses; i++)
+		for(int i=0; i < _classes.size(); i++)
 		{
-			Class c = _classes[i];
-			c.Print();
+			Class& c = _classes[i];
+			GaussianPdf& pdf = _classesPdf[i];
+
+			std::cout << "Class " << i+1 << std::endl;
+			std::cout << "Mean: " << std::endl;
+			Utility::PrintMatrix(pdf.Mean, NumberOfFeatures, 1);
+			std::cout << "Covariance: " << std::endl;
+			Utility::PrintMatrix(pdf.CovarianceMatrix, NumberOfFeatures, NumberOfFeatures);
+			std::cout << std::endl;
 		}
 	}
-
-	std::vector<FeatureVector*> ReadTestData(string filename)
+	void Reset()
 	{
-		std::string line;
-		std::vector<FeatureVector*> testData;
-
-		std::ifstream inputFile(filename.c_str());
-
-		int numberOfFeatures;
-		inputFile >> numberOfFeatures;
-		std::getline(inputFile, line);
-
-		bool readEnd = false;
-		while(!inputFile.eof())
+		for(int i=0; i<_classes.size(); i++)
 		{
-			std::getline(inputFile, line);
- 			std::istringstream lineStream(line);
+			_classesPdf[i].Delete();
+		}
 
-			FeatureVector* featureVector = cvCreateMat(NumberOfFeatures, 1, CV_32FC1);
-			for(int i=0; i<NumberOfFeatures; i++)
+		_classes.clear();
+		_classesPdf.clear();
+	}
+
+	void SetClasses(const Class* classes, int count)
+	{
+		this->Reset();
+
+		for(int i=0; i<count; i++)
+		{
+			_classes.push_back(classes[i]);
+			_classesPdf.push_back(GaussianPdf(this->NumberOfFeatures));
+		}
+	}
+	void Train(const FeatureData* trainingData, int count)
+	{
+		std::vector<const FeatureData*>* newTrainingDataOfClasses = new std::vector<const FeatureData*>[this->NumberOfFeatures]();
+
+		for(int i=0; i<_classes.size(); i++)
+		{
+			Class& c = _classes[i];
+			GaussianPdf& pdf = _classesPdf[i];
+			//std::vector<const FeatureData*> oldTrainingData = _trainingDataOfClasses[i];
+
+			cvConvertScale(pdf.Mean, pdf.Mean, c.TrainingData.size());
+			cvConvertScale(pdf.CovarianceMatrix, pdf.CovarianceMatrix, c.TrainingData.size());
+
+			//newTrainingDataOfClasses.push_back(std::vector<FeatureData*>());
+		}
+
+		for(int i=0; i<count; i++)
+		{
+			const FeatureData& x = trainingData[i];
+			newTrainingDataOfClasses[x.ClassID-1].push_back(&x);
+		}
+		
+		int totalTrainingData = 0;
+		for(int i=0; i<_classes.size(); i++)
+		{
+			Class& c = _classes[i];
+			GaussianPdf& pdf = _classesPdf[i];
+			std::vector<const FeatureData*> newTrainingData = newTrainingDataOfClasses[i];
+
+			// compute mean
+			for(int i=0; i<newTrainingData.size(); i++)
 			{
-				float value;
-				lineStream >> value;
-				if(lineStream.eof())
-				{
-					readEnd = true;
-					break;
-				}
-				featureVector->data.fl[i] = value;
+				const FeatureData* x = newTrainingData[i];
+
+				cvAdd(pdf.Mean, x->FeatureVector, pdf.Mean);
+
+				c.TrainingData.push_back(x);
 			}
-			if(readEnd)
-				break;
+			cvConvertScale(pdf.Mean, pdf.Mean, 1.0 / c.TrainingData.size());
 
-			int classID;
-			lineStream >> classID;
-
-			testData.push_back(featureVector);
-		}
-		return testData;
-	}
-
-
-	void ReadFile(string filename)
-	{
-		std::string line;
-		std::ifstream inputFile(filename.c_str());
-
-		inputFile >> NumberOfClasses;
-		inputFile >> NumberOfFeatures;
-
-		for(int i=0; i < NumberOfClasses; i++)
-		{
-			_classes.push_back(Class(i+1, NumberOfFeatures));
-		}
-
-		int tmp;
-		inputFile >> tmp >> tmp >> tmp;
-		std::getline(inputFile, line);
-
-		int totalData = 0;
-		bool readEnd = false;
-		while(!inputFile.eof())
-		{
-			std::getline(inputFile, line);
- 			std::istringstream lineStream(line);
-
-			FeatureVector* featureVector = cvCreateMat(NumberOfFeatures, 1, CV_32FC1);
-			for(int i=0; i<NumberOfFeatures; i++)
+			// compute covariance matrix
+			CvMat* xMinusMean = cvCreateMat(NumberOfFeatures, 1, CV_32FC1);
+			CvMat* xMinusMeanT = cvCreateMat(1, NumberOfFeatures, CV_32FC1);
+			
+			for(int i=0; i<newTrainingData.size(); i++)
 			{
-				float value;
-				lineStream >> value;
-				if(lineStream.eof())
-				{
-					readEnd = true;
-					break;
-				}
-				featureVector->data.fl[i] = value;
+				const FeatureData* x = newTrainingData[i];
+
+				cvSub(x->FeatureVector, pdf.Mean, xMinusMean);
+				cvTranspose(xMinusMean, xMinusMeanT);
+				cvMatMulAdd(xMinusMean, xMinusMeanT,  pdf.CovarianceMatrix,  pdf.CovarianceMatrix);
 			}
-			if(readEnd)
-				break;
+			cvConvertScale(pdf.CovarianceMatrix, pdf.CovarianceMatrix, 1.0 / c.TrainingData.size());
 
-			int classID;
-			lineStream >> classID;
+			// release matrix
+			cvReleaseMat(&xMinusMean);
+			cvReleaseMat(&xMinusMeanT);
 
-			_classes[classID-1].AddTrainingData(featureVector);
-			totalData++;
+			totalTrainingData += c.TrainingData.size();
 		}
 
-		for(int i=0;i<NumberOfClasses; i++)
+
+		for(int i=0; i<_classes.size(); i++)
 		{
-			_classes[i].ComputeParamaters();
+			Class& c = _classes[i];
+			c.Probability = c.TrainingData.size() / (float)totalTrainingData;
 		}
 	}
 
-	void Train(const TrainingData& traningData)
-	{
-
-	}
-
-	Class& Classfy(const FeatureVector& x)
+	int Classify(const FeatureData& x) const
 	{
 		float max = 0;
-		Class* maxClass = NULL;
+		int maxClass = NULL;
 
-		for(int i=0;i<NumberOfClasses; i++)
+		for(int i=0;i<_classes.size(); i++)
 		{
-			float p = _classes[i].GetProbability(x);
+			float p = _classesPdf[i].GetProbability(x);
 			if( p > max)
 			{
 				max = p;
-				maxClass = &_classes[i];
+				maxClass = i;
 			}
 		}
 
-		return *maxClass;
+		return maxClass + 1;
 	}
 };

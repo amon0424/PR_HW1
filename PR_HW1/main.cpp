@@ -1,23 +1,40 @@
 #include "BayesianClassifier.h"
+#include "Evaluator.h"
+
 #include <string>
 #include <iostream>
 #include <vector>
+
 int main(int argc, char* argv[])
 {
-	BayesianClassifier bc;
+	Evaluator evaluator;
+	
 
-	bc.ReadFile(std::string("data-iris.txt"));
-	bc.PrintClassesInformation();
-	float data[4] = {4.4,2.9,1.4,0.2};
-	FeatureVector x = cvMat(4,1,CV_32FC1, data);
-
-	std::vector<FeatureVector*> testData = bc.ReadTestData("testdata.txt");
+	evaluator.ReadFile(std::string("data-iris.txt"));
+	std::vector<FeatureData> testData = evaluator.ReadTestData("testdata.txt");
+	
+	BayesianClassifier bc(evaluator.NumberOfFeatures);
+	evaluator.InitializeClassifier(bc);
+	evaluator.Train(bc);
+	
+	int correct = 0;
 	for(int i=0; i<testData.size(); i++)
 	{
-		FeatureVector* x = testData[i];
-		Class& c = bc.Classfy(*x);
-		std::cout << "("<< x->data.fl[0] << "," << x->data.fl[1] << "," << x->data.fl[2] << "," << x->data.fl[3]  << ") classfy to " << c.ID << std::endl;
-		cvReleaseMat(&x);
+		FeatureData& x = testData[i];
+		int classId = evaluator.Classify(bc, x);
+		std::cout << "("<< x.FeatureVector->data.fl[0] << "," << x.FeatureVector->data.fl[1] << "," << x.FeatureVector->data.fl[2] << "," << x.FeatureVector->data.fl[3]  << ") classfy to " << classId;
+		if(classId == x.ClassID)
+		{
+			std::cout << " correct." << std::endl;
+			correct++;
+		}
+		else
+			std::cout << " wrond. " << x.ClassID  << std::endl;
+
+		x.Delete();
 	}
+
+	std::cout << "Correct: " << correct << "/" << testData.size() << std::endl;
+	evaluator.Delete();
 	return 0;
 }

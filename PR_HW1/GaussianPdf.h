@@ -1,7 +1,6 @@
 #ifndef _GAUSSIAN_PDF_H
 #define _GAUSSIAN_PDF_H
 
-#include "TrainingData.h"
 #include <opencv/cv.h>
 #include <vector>
 
@@ -11,30 +10,13 @@ public:
 	int Dimension;
 	CvMat* Mean;
 	CvMat* CovarianceMatrix;
-	TrainingData TraningData;
 
 	GaussianPdf(int dimension)
 	{
 		this->Dimension = dimension;
-		this->Mean = cvCreateMat(numberOfFeatures, 1, CV_32FC1);
-		this->CovarianceMatrix = cvCreateMat(numberOfFeatures, numberOfFeatures, CV_32FC1);
-	}
+		this->Mean = cvCreateMat(dimension, 1, CV_32FC1);
+		this->CovarianceMatrix = cvCreateMat(dimension, dimension, CV_32FC1);
 
-	void Delete()
-	{
-		cvReleaseMat(&Mean);
-		cvReleaseMat(&CovarianceMatrix);
-	}
-
-	void SetTrainingData(const TrainingData& traningData)
-	{
-		this->TraningData.clear();
-		for(int i=0; i<traningData.size(); i++)
-			this->TraningData.push_back(traningData[i]);
-	}
-
-	void ComputeParamaters()
-	{
 		// initialize
 		for(int i=0; i<dimension; i++)
 		{
@@ -45,32 +27,45 @@ public:
 			}
 		}
 
-		// compute mean
-		for(int i=0; i<_tranningData.size(); i++)
-		{
-			FeatureVector* x = _tranningData[i];
+	}
 
-			cvAdd(this->Mean, x, this->Mean);
-		}
-		cvConvertScale(this->Mean, this->Mean, 1.0 / _tranningData.size());
+	void Delete()
+	{
+		cvReleaseMat(&Mean);
+		cvReleaseMat(&CovarianceMatrix);
+	}
 
-		// compute covariance matrix
-		CvMat* xMinusMean = cvCreateMat(dimension, 1, CV_32FC1);
-		CvMat* xMinusMeanT = cvCreateMat(1, dimension, CV_32FC1);
+	float GetProbability(const FeatureData& x) const
+	{
+		float l = this->Dimension;
+		float det = cvDet(this->CovarianceMatrix);
+		float denom = pow(2 * 3.1415926, l / 2.0) * sqrt(det);
+
+		if(denom == 0)
+			denom = 0.00000000001;
+
+		CvMat* xMinusMean = cvCreateMat(this->Dimension, 1, CV_32FC1);
+		CvMat* xMinusMeanT = cvCreateMat(1, this->Dimension, CV_32FC1);
+		CvMat* invCovariance = cvCreateMat(this->Dimension, this->Dimension, CV_32FC1);
+		CvMat* tmp = cvCreateMat(1, 1, CV_32FC1);
 		
-		for(int i=0; i<_tranningData.size(); i++)
-		{
-			FeatureVector* x = _tranningData[i];
+		cvSub(x.FeatureVector, this->Mean, xMinusMean);
+		cvTranspose(xMinusMean, xMinusMeanT);
+		cvInvert(this->CovarianceMatrix, invCovariance);
 
-			cvSub(x, this->Mean, xMinusMean);
-			cvTranspose(xMinusMean, xMinusMeanT);
-			cvMatMulAdd(xMinusMean, xMinusMeanT,  this->CovarianceMatrix,  this->CovarianceMatrix);
-		}
-		cvConvertScale(this->CovarianceMatrix, this->CovarianceMatrix, 1.0 / _tranningData.size());
+		//(x-u)^T*invCovar
+		cvmMul(xMinusMeanT, invCovariance, xMinusMeanT);
+		//(x-u)^T*invCovar * (x-u)
+		cvmMul(xMinusMeanT, xMinusMean, tmp);
 
-		// release matrix
+		float p = exp( -0.5 * tmp->data.fl[0]) / denom;
+
 		cvReleaseMat(&xMinusMean);
 		cvReleaseMat(&xMinusMeanT);
+		cvReleaseMat(&invCovariance);
+		cvReleaseMat(&tmp);
+
+		return p;
 	}
 };
 #endif
