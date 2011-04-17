@@ -208,6 +208,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\NaiveBayesClassifier.h"
+				>
+			</File>
+			<File
 				RelativePath=".\Utility.h"
 				>
 			</File>

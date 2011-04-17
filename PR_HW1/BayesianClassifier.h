@@ -85,6 +85,7 @@ public:
 		{
 			const FeatureData& x = trainingData[i];
 			newTrainingDataOfClasses[x.ClassID-1].push_back(&x);
+			_classes[x.ClassID-1].TrainingData.push_back(&x);
 		}
 		
 		int totalTrainingData = 0;
@@ -101,7 +102,7 @@ public:
 
 				cvAdd(pdf.Mean, x->FeatureVector, pdf.Mean);
 
-				c.TrainingData.push_back(x);
+				//c.TrainingData.push_back(x);
 			}
 			cvConvertScale(pdf.Mean, pdf.Mean, 1.0 / c.TrainingData.size());
 
@@ -141,7 +142,7 @@ public:
 
 		for(int i=0;i<_classes.size(); i++)
 		{
-			float p = _classesPdf[i].GetProbability(x);
+			float p = _classesPdf[i].GetProbability(x) * _classes[i].Probability;
 			if( p > max)
 			{
 				max = p;
