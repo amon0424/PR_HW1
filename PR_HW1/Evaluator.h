@@ -5,27 +5,23 @@
 #include <fstream>
 #include <iostream>
 #include <vector>
+#include <cstdlib>
+#include <ctime> 
+#include <opencv/cv.h>
+
 #include "FeatureData.h";
 #include "Class.h"
 #include "Classifier.h"
+#include "Utility.h"
+class TrainingData;
 
 class Evaluator 
 {
-private:
-	std::vector<Class> _classes;
-	std::vector<FeatureData> _trainingData;
-	Classifier* _classifier;
-
+	TrainingData* _trainingData;
 public:
-	int NumberOfClasses;
-	int NumberOfFeatures;
-
-	void Delete();
-	void ReadFile(std::string filename);
-	std::vector<FeatureData> ReadTestData(std::string filename);
-	int Classify(const Classifier& classifier, const FeatureData& x);
-	void Train(Classifier& classifier);
-	void InitializeClassifier(Classifier& classifier);
+	Evaluator(TrainingData& trainingData): _trainingData(&trainingData) {}
+	void CrossValidate(Classifier& classifier, int k);
+	void ResubstitutionValidate(Classifier& classifier);
 };
 
 #endif

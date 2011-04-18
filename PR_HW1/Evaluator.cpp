@@ -1,107 +1,122 @@
 #include "Evaluator.h"
-
-void Evaluator::Delete()
+#include "TrainingData.h"
+void Evaluator::CrossValidate(Classifier& classifier, int k)
 {
-	for(int i=0; i< _trainingData.size(); i++)
+	// copy training data
+	std::vector<FeatureData*> trainingData;
+	for(int i=0; i<_trainingData->Data.size() ; i++)
 	{
-		_trainingData[i].Delete();
-	}
-}
-
-void Evaluator::ReadFile(std::string filename)
-{
-	std::string line;
-	std::ifstream inputFile(filename.c_str());
-
-	inputFile >> this->NumberOfClasses;
-	inputFile >> this->NumberOfFeatures;
-
-	for(int i=0; i < NumberOfClasses; i++)
-	{
-		_classes.push_back(Class(i+1));
+		trainingData.push_back(&_trainingData->Data[i]);
 	}
 
-	int tmp;
-	inputFile >> tmp >> tmp >> tmp;
-	std::getline(inputFile, line);
-
-	int totalData = 0;
-	bool readEnd = false;
-	while(!inputFile.eof())
+	// shuffle training data
+	srand(time(0));
+	for(int i=0; i<trainingData.size() ; i++)
 	{
-		std::getline(inputFile, line);
-		std::istringstream lineStream(line);
+		int r = i + (rand() % (trainingData.size()-i));
+		FeatureData* temp = trainingData[i];
+		trainingData[i] = trainingData[r];
+		trainingData[r] = temp;
+	}
 
-		FeatureData featureData(this->NumberOfFeatures);
+	// divide
+	std::vector<std::vector<FeatureData>> subsets;
+	int numberOfSubset = trainingData.size() / k;
+	int remain = trainingData.size() - numberOfSubset * k;
 
-		for(int i=0; i<this->NumberOfFeatures; i++)
+	std::vector<FeatureData*>::iterator current = trainingData.begin();
+	for(int i=0; i<k; i++)
+	{
+		std::vector<FeatureData> subset;
+		for(int j=0; j<numberOfSubset; j++)
 		{
-			lineStream >> featureData.FeatureVector->data.fl[i];
-			if(lineStream.eof())
+			subset.push_back(**current);
+			current++;
+		}
+		if(remain > 0)
+		{
+			subset.push_back(**current);
+			remain--;
+		}
+
+		subsets.push_back(subset);
+	}
+
+	// begin validation
+	CvMat* confusionMat = cvCreateMat(_trainingData->NumberOfClasses, _trainingData->NumberOfClasses, CV_32FC1);
+	Utility::ZeroMatrix(confusionMat, _trainingData->NumberOfClasses, _trainingData->NumberOfClasses);
+	int correct = 0;
+	for(int i=0; i<k; i++)
+	{
+		classifier.SetClasses(&_trainingData->Classes[0], _trainingData->Classes.size());
+		for(int j=(i+1)%k; j!=i; j=(j+1)%k)
+		{
+			std::vector<FeatureData> estimationSubset = subsets[j];
+			classifier.Train(&estimationSubset[0], estimationSubset.size());
+		}
+
+		//testing
+		std::vector<FeatureData> testingSubset = subsets[i];
+		for(int j=0; j<testingSubset.size(); j++)
+		{
+			FeatureData& x = testingSubset[j];
+			int classId = classifier.Classify(x);
+
+			if(classId == x.ClassID)
 			{
-				readEnd = true;
-				break;
+				correct++;
+				cvmSet(confusionMat, classId-1, classId-1, cvmGet(confusionMat, classId-1, classId-1) + 1);
+			}
+			else
+			{
+				x.Print();
+				std::cout << " is incorrectly classified as class " << classId << ".";
+				std::cout << " Correct is class " << x.ClassID  << std::endl;
+				cvmSet(confusionMat, x.ClassID-1, classId-1, cvmGet(confusionMat, x.ClassID-1, classId-1) + 1);
 			}
 		}
-		if(readEnd)
-			break;
-
-		lineStream >> featureData.ClassID;
-
-		_trainingData.push_back(featureData);
-		totalData++;
 	}
+
+	std::cout << "Correct: " << correct << "/" << trainingData.size();
+	printf("  %.2f%%\n", correct * 100.0 / trainingData.size());
+
+	std::cout << "Confusion Matrix: " << std::endl;
+	Utility::PrintIntMatrix(confusionMat, _trainingData->NumberOfClasses, _trainingData->NumberOfClasses);
+
+	cvReleaseMat(&confusionMat);
 }
-
-
-std::vector<FeatureData> Evaluator::ReadTestData(std::string filename)
+void Evaluator::ResubstitutionValidate(Classifier& classifier)
 {
-	std::string line;
-	std::vector<FeatureData> testData;
+	classifier.SetClasses(&_trainingData->Classes[0], _trainingData->Classes.size());
+	classifier.Train(&_trainingData->Data[0], _trainingData->Data.size());
 
-	std::ifstream inputFile(filename.c_str());
-
-	int numberOfFeatures;
-	inputFile >> numberOfFeatures;
-	std::getline(inputFile, line);
-
-	bool readEnd = false;
-	while(!inputFile.eof())
+	// begin validation
+	int correct = 0;
+	CvMat* confusionMat = cvCreateMat(_trainingData->NumberOfClasses, _trainingData->NumberOfClasses, CV_32FC1);
+	Utility::ZeroMatrix(confusionMat, _trainingData->NumberOfClasses, _trainingData->NumberOfClasses);
+	for(int j=0; j<_trainingData->Data.size(); j++)
 	{
-		std::getline(inputFile, line);
-		std::istringstream lineStream(line);
+		FeatureData& x = _trainingData->Data[j];
+		int classId = classifier.Classify(x);
 
-		FeatureData featureData(NumberOfFeatures);
-		for(int i=0; i<this->NumberOfFeatures; i++)
+		if(classId == x.ClassID)
 		{
-			lineStream >> featureData.FeatureVector->data.fl[i];
-			if(lineStream.eof())
-			{
-				readEnd = true;
-				break;
-			}
+			correct++;
+			cvmSet(confusionMat, classId-1, classId-1, cvmGet(confusionMat, classId-1, classId-1) + 1);
 		}
-		if(readEnd)
-			break;
-
-		lineStream >> featureData.ClassID;
-
-		testData.push_back(featureData);
+		else
+		{
+			x.Print();
+			std::cout << " is incorrectly classified as class " << classId << ".";
+			std::cout << " Correct is class " << x.ClassID  << std::endl;
+			cvmSet(confusionMat, x.ClassID-1, classId-1, cvmGet(confusionMat, x.ClassID-1, classId-1) + 1);
+		}
 	}
-	return testData;
-}
+	std::cout << "Correct: " << correct << "/" << _trainingData->Data.size();
+	printf("  %.2f%%\n", correct * 100.0 / _trainingData->Data.size());
 
-int Evaluator::Classify(const Classifier& classifier, const FeatureData& x)
-{
-	return classifier.Classify(x);
-}
+	std::cout << "Confusion Matrix: " << std::endl;
+	Utility::PrintIntMatrix(confusionMat, _trainingData->NumberOfClasses, _trainingData->NumberOfClasses);
 
-void Evaluator::Train(Classifier& classifier)
-{
-	classifier.Train(&_trainingData[0], _trainingData.size());
-}
-
-void Evaluator::InitializeClassifier(Classifier& classifier)
-{
-	classifier.SetClasses(&_classes[0], _classes.size());
+	cvReleaseMat(&confusionMat);
 }

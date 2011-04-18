@@ -2,19 +2,11 @@
 
 BayesianClassifier::~BayesianClassifier()
 {
-	for(int i=0; i < _classesPdf.size(); i++)
-	{
-		_classesPdf[i].Delete();
-	}
+	_classesPdf.clear();
 }
 
 void BayesianClassifier::Reset()
 {
-	for(int i=0; i<_classes.size(); i++)
-	{
-		_classesPdf[i].Delete();
-	}
-
 	_classes.clear();
 	_classesPdf.clear();
 }

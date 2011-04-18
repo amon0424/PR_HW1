@@ -1,5 +1,6 @@
 #include "GaussianPdf.h"
 #include "FeatureData.h"
+#include <opencv/cv.h>
 
 GaussianPdf::GaussianPdf(int dimension)
 {
@@ -18,8 +19,26 @@ GaussianPdf::GaussianPdf(int dimension)
 	}
 
 }
+GaussianPdf::GaussianPdf(const GaussianPdf& x)
+{
+	this->Dimension = x.Dimension;
+	this->Mean = cvCreateMat(this->Dimension, 1, CV_32FC1);
+	this->CovarianceMatrix = cvCreateMat(this->Dimension, this->Dimension, CV_32FC1);
 
-void GaussianPdf::Delete()
+	cvCopy(x.Mean, this->Mean);
+	cvCopy(x.CovarianceMatrix, this->CovarianceMatrix);
+}
+
+GaussianPdf& GaussianPdf::operator=(const GaussianPdf& x)
+{
+	this->Dimension = x.Dimension;
+	cvCopy(x.Mean, this->Mean);
+	cvCopy(x.CovarianceMatrix, this->CovarianceMatrix);
+
+	return *this;
+}
+
+GaussianPdf::~GaussianPdf()
 {
 	cvReleaseMat(&Mean);
 	cvReleaseMat(&CovarianceMatrix);

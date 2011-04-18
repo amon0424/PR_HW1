@@ -193,6 +193,10 @@
 				RelativePath=".\NaiveBayesClassifier.cpp"
 				>
 			</File>
+			<File
+				RelativePath=".\TrainingData.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="¼ÐÀYÀÉ"
@@ -225,6 +229,10 @@
 			</File>
 			<File
 				RelativePath=".\NaiveBayesClassifier.h"
+				>
+			</File>
+			<File
+				RelativePath=".\TrainingData.h"
 				>
 			</File>
 			<File

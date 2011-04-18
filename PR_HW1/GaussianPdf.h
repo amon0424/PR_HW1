@@ -14,7 +14,10 @@ public:
 	CvMat* CovarianceMatrix;
 
 	GaussianPdf(int dimension);
-	void Delete();
+	GaussianPdf(const GaussianPdf& x);
+	GaussianPdf& operator=(const GaussianPdf& x);
+	~GaussianPdf();
+
 	float GetProbability(const FeatureData& x) const;
 };
 #endif

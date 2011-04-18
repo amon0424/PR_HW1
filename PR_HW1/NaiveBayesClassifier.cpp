@@ -4,11 +4,10 @@ NaiveBayesClassifier::~NaiveBayesClassifier()
 {
 	for(int i=0; i < _classesPdfs.size(); i++)
 	{
-		for(int j=0; j < _classesPdfs[i].size(); j++)
-		{
-			_classesPdfs[i][j].Delete();
-		}
+		_classesPdfs[i].clear();
 	}
+	
+	_classesPdfs.clear();
 }
 
 void NaiveBayesClassifier::PrintClassesInformation()
@@ -28,12 +27,9 @@ void NaiveBayesClassifier::PrintClassesInformation()
 }
 void NaiveBayesClassifier::Reset()
 {
-	for(int i=0; i<_classesPdfs.size(); i++)
+	for(int i=0; i < _classesPdfs.size(); i++)
 	{
-		for(int j=0; j < _classesPdfs[i].size(); j++)
-		{
-			_classesPdfs[i][j].Delete();
-		}
+		_classesPdfs[i].clear();
 	}
 
 	_classes.clear();
