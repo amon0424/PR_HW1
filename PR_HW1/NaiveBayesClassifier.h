@@ -20,6 +20,7 @@ public:
 	int NumberOfFeatures;
 	NaiveBayesClassifier(int numberOfFeatures) : NumberOfFeatures(numberOfFeatures){}
 	~NaiveBayesClassifier();
+	char* GetName() { return "Naive Bayes Classifier"; }
 	void PrintClassesInformation();
 	void Reset();
 	void SetClasses(const Class* classes, int count);

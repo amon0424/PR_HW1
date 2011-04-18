@@ -22,7 +22,7 @@ public:
 	BayesianClassifier(int numberOfFeatures) : NumberOfFeatures(numberOfFeatures) {}
 
 	~BayesianClassifier();
-
+	char* GetName() { return "Bayesian Classifier"; }
 	void PrintClassesInformation()
 	{	
 		for(int i=0; i < _classes.size(); i++)
