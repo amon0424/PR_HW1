@@ -2,19 +2,18 @@
 #define _CLASS_H
 
 #include <vector>
-#include "FeatureData.h"
+
+class FeatureData;
 
 class Class
 {
 
 public:
-	std::vector<const FeatureData*> TrainingData;
-	float Probability;
 	int ID;
+	float Probability;
+	std::vector<const FeatureData*> TrainingData;
 
-	Class(int id) : ID(id)
-	{
-	} 
+	Class(int id) : ID(id) {}
 };
 
 #endif
