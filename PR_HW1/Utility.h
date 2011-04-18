@@ -11,7 +11,7 @@ public:
 			printf("|");
 			for(int j=0;j<cols;j++)
 			{
-				printf("%.1f\t", cvmGet(matrix, i, j));
+				printf("%.2f\t", cvmGet(matrix, i, j));
 			}
 			printf("|\n");
 		}

@@ -1,4 +1,7 @@
 #include "NaiveBayesClassifier.h"
+#include <iostream>
+#include <iomanip>
+#include "Utility.h"
 
 NaiveBayesClassifier::~NaiveBayesClassifier()
 {
@@ -10,21 +13,24 @@ NaiveBayesClassifier::~NaiveBayesClassifier()
 	_classesPdfs.clear();
 }
 
-void NaiveBayesClassifier::PrintClassesInformation()
+void NaiveBayesClassifier::Print()
 {	
-	//for(int i=0; i < _classes.size(); i++)
-	//{
-	//	Class& c = _classes[i];
-	//	GaussianPdf& pdf = _classesPdf[i];
+	for(int i=0; i < _classes.size(); i++)
+	{
+		Class& c = _classes[i];
 
-	//	std::cout << "Class " << i+1 << std::endl;
-	//	std::cout << "Mean: " << std::endl;
-	//	Utility::PrintMatrix(pdf.Mean, NumberOfFeatures, 1);
-	//	std::cout << "Covariance: " << std::endl;
-	//	Utility::PrintMatrix(pdf.CovarianceMatrix, NumberOfFeatures, NumberOfFeatures);
-	//	std::cout << std::endl;
-	//}
+		std::cout << "Class " << c.ID << std::endl;
+
+		for(int j=0; j < _classesPdfs[i].size(); j++)
+		{
+			GaussianPdf& pdf = _classesPdfs[i][j];
+			std::cout << std::fixed << std::setprecision(2) << "Mean: " << cvmGet(pdf.Mean, 0, 0) << "\tCovariance: " << cvmGet(pdf.CovarianceMatrix, 0, 0) << std::endl;
+		}
+
+		std::cout << std::endl;
+	}
 }
+
 void NaiveBayesClassifier::Reset()
 {
 	for(int i=0; i < _classesPdfs.size(); i++)
@@ -86,14 +92,12 @@ void NaiveBayesClassifier::Train(const FeatureData* trainingData, int count)
 			GaussianPdf& pdf = _classesPdfs[i][j];
 
 			// compute mean
-			for(int i=0; i<newTrainingData.size(); i++)
+			for(int k=0; k<newTrainingData.size(); k++)
 			{
-				const FeatureData* x = newTrainingData[i];
+				const FeatureData* x = newTrainingData[k];
 				tmpX.data.fl[0] = x->FeatureVector->data.fl[j];
 
 				cvAdd(pdf.Mean, &tmpX, pdf.Mean);
-
-				//c.TrainingData.push_back(x);
 			}
 			cvConvertScale(pdf.Mean, pdf.Mean, 1.0 / c.TrainingData.size());
 
@@ -101,9 +105,9 @@ void NaiveBayesClassifier::Train(const FeatureData* trainingData, int count)
 			CvMat* xMinusMean = cvCreateMat(1, 1, CV_32FC1);
 			CvMat* xMinusMeanT = cvCreateMat(1, 1, CV_32FC1);
 
-			for(int i=0; i<newTrainingData.size(); i++)
+			for(int k=0; k<newTrainingData.size(); k++)
 			{
-				const FeatureData* x = newTrainingData[i];
+				const FeatureData* x = newTrainingData[k];
 				tmpX.data.fl[0] = x->FeatureVector->data.fl[j];
 
 				cvSub(&tmpX, pdf.Mean, xMinusMean);

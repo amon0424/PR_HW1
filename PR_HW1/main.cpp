@@ -26,7 +26,8 @@ int main(int argc, char* argv[])
 	{
 		Classifier& classifier = *classifiers[classifierID];
 		classifier.SetClasses(&trainingData.Classes[0], trainingData.Classes.size());
-		classifier.Train(&testData[0], testData.size());
+		classifier.Train(&trainingData.Data[0], trainingData.Data.size());
+		classifier.Print();
 
 		std::cout << "Using " << classifier.GetName() << std::endl;
 

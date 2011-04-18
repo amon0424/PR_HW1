@@ -2,13 +2,11 @@
 #define _NAIVE_BAYES_CLASSIFIER_H
 
 #include <string>
-#include <fstream>
-#include <iostream>
 #include <vector>
 #include "Class.h"
 #include "Classifier.h"
 #include "GaussianPdf.h"
-#include "Utility.h"
+
 
 using std::string;
 
@@ -21,7 +19,7 @@ public:
 	NaiveBayesClassifier(int numberOfFeatures) : NumberOfFeatures(numberOfFeatures){}
 	~NaiveBayesClassifier();
 	char* GetName() { return "Naive Bayes Classifier"; }
-	void PrintClassesInformation();
+	void Print();
 	void Reset();
 	void SetClasses(const Class* classes, int count);
 	void Train(const FeatureData* trainingData, int count);

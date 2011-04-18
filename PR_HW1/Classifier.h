@@ -6,6 +6,7 @@
 class Classifier
 {
 public:
+	virtual void Print() {}
 	virtual char* GetName() = 0;
 	virtual void SetClasses(const Class* classes, int count) = 0;
 	virtual void Reset() = 0;
