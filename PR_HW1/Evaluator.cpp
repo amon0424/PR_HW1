@@ -47,12 +47,15 @@ float Evaluator::CrossValidate(Classifier& classifier, int k)
 	CvMat* confusionMat = cvCreateMat(_trainingData->NumberOfClasses, _trainingData->NumberOfClasses, CV_32FC1);
 	Utility::ZeroMatrix(confusionMat, _trainingData->NumberOfClasses, _trainingData->NumberOfClasses);
 	int correct = 0;
-	cout << "Incorrect Classification Results" << endl;
-	cout << "----------------------------------------" << endl;
-	cout << left << setw(22) << "Feature Vector";
-	cout << right << setw(9) << "Incorrect";
-	cout << right << setw(9) << "Correct" <<endl;
-	cout << "----------------------------------------" << endl;
+	if(this->EnableOutput)
+	{
+		cout << "Incorrect Classification Results" << endl;
+		cout << "----------------------------------------" << endl;
+		cout << left << setw(22) << "Feature Vector";
+		cout << right << setw(9) << "Incorrect";
+		cout << right << setw(9) << "Correct" <<endl;
+		cout << "----------------------------------------" << endl;
+	}
 	for(int i=0; i<k; i++)
 	{
 		classifier.SetClasses(&_trainingData->Classes[0], _trainingData->Classes.size());
@@ -76,20 +79,26 @@ float Evaluator::CrossValidate(Classifier& classifier, int k)
 			}
 			else
 			{
-				x.Print();
-				cout << right << setw(9) << classId ;
-				cout << right << setw(9) << x.ClassID <<endl;
+				if(this->EnableOutput)
+				{
+					x.Print();
+					cout << right << setw(9) << classId ;
+					cout << right << setw(9) << x.ClassID <<endl;
+				}
 				cvmSet(confusionMat, x.ClassID-1, classId-1, cvmGet(confusionMat, x.ClassID-1, classId-1) + 1);
 			}
 		}
 	}
-	cout << "----------------------------------------" << endl;
+	if(this->EnableOutput)
+	{
+		cout << "----------------------------------------" << endl;
 
-	cout << "Correct: " << correct << "/" << trainingData.size();
-	printf("  %.2f%%\n", correct * 100.0 / trainingData.size());
+		cout << "Correct: " << correct << "/" << trainingData.size();
+		printf("  %.2f%%\n", correct * 100.0 / trainingData.size());
 
-	cout << "Confusion Matrix: " << endl;
-	Utility::PrintIntMatrix(confusionMat, _trainingData->NumberOfClasses, _trainingData->NumberOfClasses);
+		cout << "Confusion Matrix: " << endl;
+		Utility::PrintIntMatrix(confusionMat, _trainingData->NumberOfClasses, _trainingData->NumberOfClasses);
+	}
 
 	cvReleaseMat(&confusionMat);
 
@@ -104,12 +113,16 @@ float Evaluator::ResubstitutionValidate(Classifier& classifier)
 	int correct = 0;
 	CvMat* confusionMat = cvCreateMat(_trainingData->NumberOfClasses, _trainingData->NumberOfClasses, CV_32FC1);
 	Utility::ZeroMatrix(confusionMat, _trainingData->NumberOfClasses, _trainingData->NumberOfClasses);
-	cout << "Incorrect Classification Results" << endl;
-	cout << "----------------------------------------" << endl;
-	cout << left << setw(22) << "Feature Vector";
-	cout << right << setw(9) << "Incorrect";
-	cout << right << setw(9) << "Correct" <<endl;
-	cout << "----------------------------------------" << endl;
+
+	if(this->EnableOutput)
+	{
+		cout << "Incorrect Classification Results" << endl;
+		cout << "----------------------------------------" << endl;
+		cout << left << setw(22) << "Feature Vector";
+		cout << right << setw(9) << "Incorrect";
+		cout << right << setw(9) << "Correct" <<endl;
+		cout << "----------------------------------------" << endl;
+	}
 	for(int j=0; j<_trainingData->Data.size(); j++)
 	{
 		FeatureData& x = _trainingData->Data[j];
@@ -122,20 +135,24 @@ float Evaluator::ResubstitutionValidate(Classifier& classifier)
 		}
 		else
 		{
-			x.Print();
-			cout << right << setw(9) << classId ;
-			cout << right << setw(9) << x.ClassID <<endl;
-
+			if(this->EnableOutput)
+			{
+				x.Print();
+				cout << right << setw(9) << classId ;
+				cout << right << setw(9) << x.ClassID <<endl;
+			}
 			cvmSet(confusionMat, x.ClassID-1, classId-1, cvmGet(confusionMat, x.ClassID-1, classId-1) + 1);
 		}
 	}
-	cout << "----------------------------------------" << endl;
-	cout << "Correct: " << correct << "/" << _trainingData->Data.size();
-	printf("  %.2f%%\n", correct * 100.0 / _trainingData->Data.size());
+	if(this->EnableOutput)
+	{
+		cout << "----------------------------------------" << endl;
+		cout << "Correct: " << correct << "/" << _trainingData->Data.size();
+		printf("  %.2f%%\n", correct * 100.0 / _trainingData->Data.size());
 
-	cout << "Confusion Matrix: " << endl;
-	Utility::PrintIntMatrix(confusionMat, _trainingData->NumberOfClasses, _trainingData->NumberOfClasses);
-
+		cout << "Confusion Matrix: " << endl;
+		Utility::PrintIntMatrix(confusionMat, _trainingData->NumberOfClasses, _trainingData->NumberOfClasses);
+	}
 	cvReleaseMat(&confusionMat);
 
 	return (float)correct / _trainingData->Data.size();
