@@ -20,8 +20,9 @@ class Evaluator
 	TrainingData* _trainingData;
 public:
 	Evaluator(TrainingData& trainingData): _trainingData(&trainingData) {}
-	void CrossValidate(Classifier& classifier, int k);
-	void ResubstitutionValidate(Classifier& classifier);
+	void SetTrainingData(TrainingData& trainingData) { _trainingData = &trainingData; }
+	float CrossValidate(Classifier& classifier, int k);
+	float ResubstitutionValidate(Classifier& classifier);
 };
 
 #endif

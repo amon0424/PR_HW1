@@ -220,6 +220,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\EvaluatorTester.h"
+				>
+			</File>
+			<File
 				RelativePath=".\FeatureData.h"
 				>
 			</File>

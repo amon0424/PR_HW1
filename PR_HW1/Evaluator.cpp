@@ -1,7 +1,7 @@
 #include "Evaluator.h"
 #include "TrainingData.h"
 using namespace std;
-void Evaluator::CrossValidate(Classifier& classifier, int k)
+float Evaluator::CrossValidate(Classifier& classifier, int k)
 {
 	// copy training data
 	vector<FeatureData*> trainingData;
@@ -92,8 +92,10 @@ void Evaluator::CrossValidate(Classifier& classifier, int k)
 	Utility::PrintIntMatrix(confusionMat, _trainingData->NumberOfClasses, _trainingData->NumberOfClasses);
 
 	cvReleaseMat(&confusionMat);
+
+	return (float)correct / trainingData.size();
 }
-void Evaluator::ResubstitutionValidate(Classifier& classifier)
+float Evaluator::ResubstitutionValidate(Classifier& classifier)
 {
 	classifier.SetClasses(&_trainingData->Classes[0], _trainingData->Classes.size());
 	classifier.Train(&_trainingData->Data[0], _trainingData->Data.size());
@@ -135,4 +137,6 @@ void Evaluator::ResubstitutionValidate(Classifier& classifier)
 	Utility::PrintIntMatrix(confusionMat, _trainingData->NumberOfClasses, _trainingData->NumberOfClasses);
 
 	cvReleaseMat(&confusionMat);
+
+	return (float)correct / _trainingData->Data.size();
 }

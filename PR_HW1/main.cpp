@@ -9,12 +9,15 @@
 #include "Evaluator.h"
 #include "TrainingData.h"
 #include "Utility.h"
+#include "EvaluatorTester.h"
+
 using namespace std;
 
 int main(int argc, char* argv[])
 {
 	bool enableEvaluation = false;
 	bool printClassesParameters = false;
+	int k = 0;
 
 	// Process the arguments
 	string trainingDataFilename;
@@ -51,7 +54,8 @@ int main(int argc, char* argv[])
 			}
 		}
 
-		// The last 2 arguments is training and testing file name.
+		// The last 3 arguments is training and testing file name.
+
 		trainingDataFilename = string(argv[argc-2]);
 		if(!ifstream(trainingDataFilename.c_str()))
 		{
@@ -68,7 +72,8 @@ int main(int argc, char* argv[])
 	}
 	else
 	{
-
+		cout << "Must provide training and testing data file." << endl;
+		return 1;
 	}
 
 	TrainingData trainingData;
@@ -128,6 +133,8 @@ int main(int argc, char* argv[])
 		evaluator.CrossValidate(bc, 4);
 		cout <<endl;
 	}
+
+	EvaluatorTester::Test(trainingData, 10, 4, 150);
 
 	testData.clear();
 	delete &testData;

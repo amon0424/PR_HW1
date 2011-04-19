@@ -5,6 +5,7 @@
 #include <vector>
 #include "Class.h"
 
+class FeatureData;
 class TrainingData
 {
 public:
@@ -13,6 +14,8 @@ public:
 	int NumberOfClasses;
 	int NumberOfFeatures;
 
+	TrainingData() : NumberOfClasses(0), NumberOfFeatures(0){}
+	TrainingData(FeatureData** data, int count);
 	void ReadFile(std::string filename);
 	std::vector<FeatureData>* ReadTestData(std::string filename);
 };

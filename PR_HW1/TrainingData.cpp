@@ -1,6 +1,27 @@
 #include <fstream>
 #include "TrainingData.h"
 #include "FeatureData.h"
+TrainingData::TrainingData(FeatureData** data, int count)
+{
+	if(count > 0)
+	{
+		NumberOfFeatures = (*data[0]).NumberOfFeatures;
+		
+		int maxClass = 0;
+		for(int i=0; i<count; i++)
+		{
+			FeatureData* x = data[i];
+			this->Data.push_back(*x);
+			if((*x).ClassID > maxClass)
+				maxClass = (*x).ClassID;
+		}
+
+		NumberOfClasses = maxClass;
+
+		for(int i=0; i<NumberOfClasses; i++)
+			Classes.push_back(Class(i+1));
+	}
+}
 void TrainingData::ReadFile(std::string filename)
 {
 	std::string line;
