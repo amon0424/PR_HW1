@@ -2,6 +2,7 @@
 #define _FEATURE_DATA_H
 #include <opencv/cv.h>
 #include <iostream>
+#include <iomanip>
 class FeatureData
 {
 public:
@@ -37,7 +38,21 @@ public:
 
 	void Print()
 	{
-		std::cout << "("<< FeatureVector->data.fl[0] << "," << FeatureVector->data.fl[1] << "," << FeatureVector->data.fl[2] << "," << FeatureVector->data.fl[3]  << ")";
+		std::stringstream s;
+		//std::cout.width(20);
+		//s << "(" << FeatureVector->data.fl[0] << "," << FeatureVector->data.fl[1] << "," << FeatureVector->data.fl[2] << "," << FeatureVector->data.fl[3]  << ")";
+		
+		s << "(";
+		for(int i=0; i<NumberOfFeatures; i++)
+		{
+			s << std::left << std::setprecision(2) << std::setw(3) << FeatureVector->data.fl[i];
+
+			if(i!=NumberOfFeatures-1)
+				s << ", ";
+		}
+		s << ")";
+		std::cout << std::left << std::setw(22) << s.str();
+		//std::cout << std::left /*<< std::setw(20)*/ << s.str();
 	}
 };
 #endif

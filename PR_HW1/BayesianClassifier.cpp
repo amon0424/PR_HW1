@@ -22,6 +22,7 @@ void BayesianClassifier::Print()
 		GaussianPdf& pdf = _classesPdf[i];
 
 		std::cout << "Class " << c.ID << std::endl;
+		std::cout << "-------" << std::endl;
 		std::cout << "Mean: " << std::endl;
 		Utility::PrintMatrix(pdf.Mean, NumberOfFeatures, 1);
 		std::cout << "Covariance: " << std::endl;

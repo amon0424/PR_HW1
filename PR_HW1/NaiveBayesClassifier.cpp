@@ -20,6 +20,7 @@ void NaiveBayesClassifier::Print()
 		Class& c = _classes[i];
 
 		std::cout << "Class " << c.ID << std::endl;
+		std::cout << "-------" << std::endl;
 
 		for(int j=0; j < _classesPdfs[i].size(); j++)
 		{
