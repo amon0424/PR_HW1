@@ -37,6 +37,7 @@ float Evaluator::CrossValidate(Classifier& classifier, int k)
 		if(remain > 0)
 		{
 			subset.push_back(**current);
+			current++;
 			remain--;
 		}
 
