@@ -1,6 +1,8 @@
 #include <fstream>
 #include "TrainingData.h"
 #include "FeatureData.h"
+#include <ctime>
+#include <vector>
 TrainingData::TrainingData(FeatureData** data, int count)
 {
 	if(count > 0)
@@ -21,6 +23,25 @@ TrainingData::TrainingData(FeatureData** data, int count)
 		for(int i=0; i<NumberOfClasses; i++)
 			Classes.push_back(Class(i+1));
 	}
+}
+TrainingData TrainingData::PickRandomData(int n)
+{
+	if(n > this->Data.size())
+	{
+		std::cout << "Error: N is larger than the size of training data." << std::endl;
+		return TrainingData();
+	}
+
+	std::vector<FeatureData*> trainingData;
+	//srand(time(0));
+	// shuffle training data
+	for(int i=0; i<n ; i++)
+	{
+		int r = i + (rand() % (this->Data.size()-i));
+		trainingData.push_back(&this->Data[r]);
+	}
+
+	return TrainingData(&trainingData[0], n);
 }
 void TrainingData::ReadFile(std::string filename)
 {

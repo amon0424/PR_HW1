@@ -16,6 +16,7 @@ public:
 
 	TrainingData() : NumberOfClasses(0), NumberOfFeatures(0){}
 	TrainingData(FeatureData** data, int count);
+	TrainingData PickRandomData(int n);
 	void ReadFile(std::string filename);
 	std::vector<FeatureData>* ReadTestData(std::string filename);
 };

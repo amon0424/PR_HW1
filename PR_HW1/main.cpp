@@ -118,29 +118,31 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 
-	TrainingData trainingData;
-	trainingData.ReadFile(trainingDataFilename);
+	TrainingData ttlTrainingData;
+	ttlTrainingData.ReadFile(trainingDataFilename);
 
 	if(n == -1)
-		n = trainingData.Data.size();
+		n = ttlTrainingData.Data.size();
 
-	if(n > trainingData.Data.size())
+	if(n > ttlTrainingData.Data.size())
 	{
 		cout << "Error: N is larger than the size of training data." << endl;
 		return 1;
 	}
+
+	TrainingData trainingData = ttlTrainingData.PickRandomData(n);
 	
 	if(!testMode)
 	{
 		// Classifiers
-		BayesianClassifier bc(trainingData.NumberOfFeatures);
-		NaiveBayesClassifier nc(trainingData.NumberOfFeatures);
+		BayesianClassifier bc(ttlTrainingData.NumberOfFeatures);
+		NaiveBayesClassifier nc(ttlTrainingData.NumberOfFeatures);
 
 		Classifier* classifiers[2] = { &bc, &nc };
 
 		// Begin classify
 		cout << "===Testing===" <<endl <<endl;
-		vector<FeatureData>& testData = *trainingData.ReadTestData(testingFilename);
+		vector<FeatureData>& testData = *ttlTrainingData.ReadTestData(testingFilename);
 		for(int classifierID = 0; classifierID < 2; classifierID++)
 		{
 			Classifier& classifier = *classifiers[classifierID];
@@ -174,7 +176,7 @@ int main(int argc, char* argv[])
 		{
 			cout << "===Evaluation===" << endl << endl;
 
-			Evaluator evaluator(trainingData);
+			Evaluator evaluator(ttlTrainingData);
 
 			for(int ci=0; ci<2; ci++)
 			{
@@ -195,7 +197,7 @@ int main(int argc, char* argv[])
 	}
 	else
 	{
-		EvaluatorTester::Test(trainingData, r, k, n);
+		EvaluatorTester::Test(ttlTrainingData, r, k, n);
 	}	
 	
 	return 0;
