@@ -176,7 +176,7 @@ int main(int argc, char* argv[])
 		{
 			cout << "===Evaluation===" << endl << endl;
 
-			Evaluator evaluator(ttlTrainingData);
+			Evaluator evaluator(trainingData);
 
 			for(int ci=0; ci<2; ci++)
 			{
@@ -186,7 +186,7 @@ int main(int argc, char* argv[])
 				evaluator.ResubstitutionValidate(*classifiers[ci]);
 				cout << endl;
 				//Cross Validation
-				cout << "Begin Cross Validation" <<endl;
+				cout << "Cross Validation" <<endl;
 				evaluator.CrossValidate(*classifiers[ci], k);
 				cout << endl;
 			}

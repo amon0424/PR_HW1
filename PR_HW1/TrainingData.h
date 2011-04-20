@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 #include "Class.h"
-
+#include <ctime>
 class FeatureData;
 class TrainingData
 {
@@ -14,7 +14,7 @@ public:
 	int NumberOfClasses;
 	int NumberOfFeatures;
 
-	TrainingData() : NumberOfClasses(0), NumberOfFeatures(0){}
+	TrainingData() : NumberOfClasses(0), NumberOfFeatures(0) { srand(time(0)); }
 	TrainingData(FeatureData** data, int count);
 	TrainingData PickRandomData(int n);
 	void ReadFile(std::string filename);

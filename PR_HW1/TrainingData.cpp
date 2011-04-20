@@ -5,6 +5,7 @@
 #include <vector>
 TrainingData::TrainingData(FeatureData** data, int count)
 {
+	srand(time(0));
 	if(count > 0)
 	{
 		NumberOfFeatures = (*data[0]).NumberOfFeatures;
@@ -32,13 +33,21 @@ TrainingData TrainingData::PickRandomData(int n)
 		return TrainingData();
 	}
 
+	std::vector<FeatureData*> tmpTrainingData;
+	for(int i=0; i<this->Data.size() ; i++)
+	{
+		tmpTrainingData.push_back(&this->Data[i]);
+	}
+
 	std::vector<FeatureData*> trainingData;
 	//srand(time(0));
 	// shuffle training data
 	for(int i=0; i<n ; i++)
 	{
-		int r = i + (rand() % (this->Data.size()-i));
-		trainingData.push_back(&this->Data[r]);
+		int r = i + (rand() % (tmpTrainingData.size()-i));
+
+		trainingData.push_back(tmpTrainingData[r]);
+		tmpTrainingData[r] = tmpTrainingData[i];
 	}
 
 	return TrainingData(&trainingData[0], n);
