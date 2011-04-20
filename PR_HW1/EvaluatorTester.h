@@ -11,7 +11,7 @@ using namespace std;
 class EvaluatorTester
 {
 public:
-	static void Test(TrainingData& _trainingData, int run, int k, int usingData)
+	static void Test(TrainingData& _trainingData, int run, int k, int n)
 	{
 		BayesianClassifier bc(_trainingData.NumberOfFeatures);
 		NaiveBayesClassifier nc(_trainingData.NumberOfFeatures);
@@ -32,24 +32,24 @@ public:
 		srand(time(0));
 		for(int runIdx=0; runIdx < run; runIdx++)
 		{
-			//cout << "Run " << runIdx << endl;
-
-			// shuffle training data
-			for(int i=0; i<trainingData.size() ; i++)
+			if(n != _trainingData.Data.size())
 			{
-				int r = i + (rand() % (trainingData.size()-i));
-				FeatureData* temp = trainingData[i];
-				trainingData[i] = trainingData[r];
-				trainingData[r] = temp;
+				// shuffle training data
+				for(int i=0; i<trainingData.size() ; i++)
+				{
+					int r = i + (rand() % (trainingData.size()-i));
+					FeatureData* temp = trainingData[i];
+					trainingData[i] = trainingData[r];
+					trainingData[r] = temp;
+				}
 			}
-
 			vector<FeatureData*> runTrainingFeatures;
-			for(int i=0; i<usingData ; i++)
+			for(int i=0; i<n ; i++)
 			{
 				runTrainingFeatures.push_back(trainingData[i]);
 			}
 
-			runTrainingData = TrainingData(&runTrainingFeatures[0], usingData);
+			runTrainingData = TrainingData(&runTrainingFeatures[0], n);
 			evaluator.SetTrainingData(runTrainingData);
 
 			for(int ci=0; ci<2; ci++)
@@ -65,17 +65,21 @@ public:
 			}
 		}
 
-		cout << "Test Results" << endl;
+		cout << "===Evaluator Test===" << endl;
+		cout << "run=" << run << endl;
+		cout << "k=" << k << endl;
+		cout << "n=" << n << endl;
 
+		cout << "===Test Results===" << endl;
 		for(int ci=0; ci<2; ci++)
 		{
 			resubRates[ci] /= run;
 			crossRates[ci] /= run;
 
 			cout.precision(4);
-			cout << classifiers[ci]->GetName() << endl;
-			cout << "Resubstitution: " << resubRates[ci] << endl;
-			cout << "K-fold: " << crossRates[ci] << endl;
+			cout << ci+1 << ". " << classifiers[ci]->GetName() << endl;
+			cout << " Resubstitution: " << resubRates[ci] << endl;
+			cout << " K-fold: " << crossRates[ci] << endl;
 		}
 	}
 };

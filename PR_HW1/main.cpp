@@ -19,9 +19,9 @@ int main(int argc, char* argv[])
 	bool printClassesParameters = false;
 	bool testMode = false;
 	int k = 4;
+	int n = -1;	//N
 
 	// arguments for test mode
-	int n = -1;	//N
 	int r = 10;	//run
 
 	// Process the arguments
@@ -53,7 +53,7 @@ int main(int argc, char* argv[])
 						{
 							if((k = atoi(argument.substr(j+2).c_str()))==0)
 							{
-								cout << argument.substr(j+2) << " is not a valid value for k." << endl;
+								cout << "Error: " << argument.substr(j+2) << " is not a valid value for k." << endl;
 								return 1;
 							}
 							j += 2 + argument.substr(j+2).length();
@@ -64,7 +64,7 @@ int main(int argc, char* argv[])
 						{
 							if((n = atoi(argument.substr(j+2).c_str()))==0)
 							{
-								cout << argument.substr(j+2) << " is not a valid value for d." << endl;
+								cout << "Error: " << argument.substr(j+2) << " is not a valid value for n." << endl;
 								return 1;
 							}
 							j += 2 + argument.substr(j+2).length();
@@ -74,7 +74,7 @@ int main(int argc, char* argv[])
 						{
 							if((r = atoi(argument.substr(j+2).c_str()))==0)
 							{
-								cout << argument.substr(j+2) << " is not a valid value for r." << endl;
+								cout << "Error: " << argument.substr(j+2) << " is not a valid value for r." << endl;
 								return 1;
 							}
 							j += 2 + argument.substr(j+2).length();
@@ -102,19 +102,19 @@ int main(int argc, char* argv[])
 
 		if(!ifstream(trainingDataFilename.c_str()))
 		{
-			cout << "Training data file dosen't exists." << endl;
+			cout << "Error: Training data file dosen't exists." << endl;
 			return 1;
 		}
 		if(!testMode && !ifstream(testingFilename.c_str()))
 		{
-			cout << "Testing data file dosen't exists." << endl;
+			cout << "Error: Testing data file dosen't exists." << endl;
 			return 1;
 		}
 	}
 	
 	if(trainingDataFilename.compare("") == 0 || (!testMode && testingFilename.compare("") == 0))
 	{
-		cout << "Must provide training and testing data file." << endl;
+		cout << "Error: Must provide training and testing data file." << endl;
 		return 1;
 	}
 
@@ -123,6 +123,12 @@ int main(int argc, char* argv[])
 
 	if(n == -1)
 		n = trainingData.Data.size();
+
+	if(n > trainingData.Data.size())
+	{
+		cout << "Error: N is larger than the size of training data." << endl;
+		return 1;
+	}
 	
 	if(!testMode)
 	{
@@ -166,7 +172,7 @@ int main(int argc, char* argv[])
 
 		if(enableEvaluation)
 		{
-			cout << "===Evaluation===" <<endl <<endl;
+			cout << "===Evaluation===" << endl << endl;
 
 			Evaluator evaluator(trainingData);
 
