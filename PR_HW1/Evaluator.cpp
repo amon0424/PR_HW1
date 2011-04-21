@@ -48,14 +48,18 @@ float Evaluator::CrossValidate(Classifier& classifier, int k)
 	CvMat* confusionMat = cvCreateMat(_trainingData->NumberOfClasses, _trainingData->NumberOfClasses, CV_32FC1);
 	Utility::ZeroMatrix(confusionMat, _trainingData->NumberOfClasses, _trainingData->NumberOfClasses);
 	int correct = 0;
+	std::string hozLine;
+	for(int i=0; i< 5 * this->_trainingData->NumberOfFeatures + 20; i++)
+		hozLine += "-";
+
 	if(this->EnableOutput)
 	{
 		cout << "Incorrect Classification Results" << endl;
-		cout << "----------------------------------------" << endl;
-		cout << left << setw(22) << "Feature Vector";
+		cout << hozLine << endl;
+		cout << left << setw(5 * this->_trainingData->NumberOfFeatures + 2) << "Feature Vector";
 		cout << right << setw(9) << "Incorrect";
 		cout << right << setw(9) << "Correct" <<endl;
-		cout << "----------------------------------------" << endl;
+		cout << hozLine << endl;
 	}
 	for(int i=0; i<k; i++)
 	{
@@ -94,7 +98,7 @@ float Evaluator::CrossValidate(Classifier& classifier, int k)
 	}
 	if(this->EnableOutput)
 	{
-		cout << "----------------------------------------" << endl;
+		cout << hozLine << endl;
 
 		cout << "Correct: " << correct << "/" << trainingData.size();
 		printf("  %.2f%%\n", correct * 100.0 / trainingData.size());
@@ -117,14 +121,17 @@ float Evaluator::ResubstitutionValidate(Classifier& classifier)
 	CvMat* confusionMat = cvCreateMat(_trainingData->NumberOfClasses, _trainingData->NumberOfClasses, CV_32FC1);
 	Utility::ZeroMatrix(confusionMat, _trainingData->NumberOfClasses, _trainingData->NumberOfClasses);
 
+	std::string hozLine;
+	for(int i=0; i< 5 * this->_trainingData->NumberOfFeatures + 20; i++)
+		hozLine += "-";
 	if(this->EnableOutput)
 	{
 		cout << "Incorrect Classification Results" << endl;
-		cout << "----------------------------------------" << endl;
-		cout << left << setw(22) << "Feature Vector";
+		cout << hozLine << endl;
+		cout << left << setw(5 * this->_trainingData->NumberOfFeatures + 2) << "Feature Vector";
 		cout << right << setw(9) << "Incorrect";
 		cout << right << setw(9) << "Correct" <<endl;
-		cout << "----------------------------------------" << endl;
+		cout << hozLine << endl;
 	}
 	for(int j=0; j<_trainingData->Data.size(); j++)
 	{
@@ -149,7 +156,7 @@ float Evaluator::ResubstitutionValidate(Classifier& classifier)
 	}
 	if(this->EnableOutput)
 	{
-		cout << "----------------------------------------" << endl;
+		cout << hozLine << endl;
 		cout << "Correct: " << correct << "/" << _trainingData->Data.size();
 		printf("  %.2f%%\n", correct * 100.0 / _trainingData->Data.size());
 

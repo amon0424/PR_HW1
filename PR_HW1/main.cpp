@@ -32,7 +32,7 @@ int main(int argc, char* argv[])
 	if(argc > 2)
 	{
 		// Options
-		for(int i=1; i<argc; i++)
+		for(int i=1; i<argc-1; i++)
 		{
 			string argument(argv[i]);
 			if(argument.compare(0,2,"--") == 0)
@@ -71,7 +71,20 @@ int main(int argc, char* argv[])
 							j += 2 + argument.substr(j+2).length();
 						}
 						break;
+					
 					case 'r':
+						if(argument.length() > j+2)
+						{
+							if((r = atoi(argument.substr(j+2).c_str()))==0)
+							{
+								cout << "Error: " << argument.substr(j+2) << " is not a valid value for r." << endl;
+								return 1;
+							}
+							j += 2 + argument.substr(j+2).length();
+							
+						}
+						break;
+					case 't':
 						if(argument.length() > j+2)
 						{
 							if(!ifstream(argument.substr(j+2).c_str()))
@@ -80,17 +93,6 @@ int main(int argc, char* argv[])
 								return 1;
 							}
 							testingFilename = argument.substr(j+2);
-							j += 2 + argument.substr(j+2).length();
-						}
-						break;
-					case 't':
-						if(argument.length() > j+2)
-						{
-							if((r = atoi(argument.substr(j+2).c_str()))==0)
-							{
-								cout << "Error: " << argument.substr(j+2) << " is not a valid value for r." << endl;
-								return 1;
-							}
 							j += 2 + argument.substr(j+2).length();
 							enableTesting = true;
 						}
@@ -162,8 +164,10 @@ int main(int argc, char* argv[])
 					classifier.Print();
 
 				cout << "Classification Results" << endl;
-				cout << "-------------------------------------------------" << endl;
-				cout << left << setw(22) << "Feature Vector";
+				for(int i=0; i< 5 * ttlTrainingData.NumberOfFeatures + 2; i++)
+					cout << "-" ;
+				cout << endl;
+				cout << left << setw(5 * ttlTrainingData.NumberOfFeatures + 2) << "Feature Vector";
 				cout << right << setw(5) << "Class"; 
 				for(int j=0; j<trainingData.Classes.size(); j++)
 				{

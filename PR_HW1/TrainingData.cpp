@@ -89,26 +89,23 @@ void TrainingData::ReadFile(std::string filename)
 	std::string line;
 	std::ifstream inputFile(filename.c_str());
 
-	inputFile >> this->NumberOfClasses;
-	inputFile >> this->NumberOfFeatures;
+	std::getline(inputFile, line);
+	std::stringstream lineStream(line);
+	lineStream >> this->NumberOfClasses;
+	lineStream >> this->NumberOfFeatures;
 
 	for(int i=0; i < NumberOfClasses; i++)
 	{
 		this->Classes.push_back(Class(i+1));
+		std::getline(inputFile, line);
 	}
-
-	int tmp;
-	std::getline(inputFile, line);
-	std::getline(inputFile, line);
-	std::getline(inputFile, line);
-	std::getline(inputFile, line);
 
 	int totalData = 0;
 	bool readEnd = false;
 	while(!inputFile.eof())
 	{
 		std::getline(inputFile, line);
-		std::istringstream lineStream(line);
+		std::stringstream lineStream = std::stringstream(line);
 
 		FeatureData featureData(this->NumberOfFeatures);
 

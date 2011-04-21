@@ -45,10 +45,13 @@ public:
 		s << "(";
 		for(int i=0; i<NumberOfFeatures; i++)
 		{
-			s << std::left << std::setprecision(2) << std::setw(3) << FeatureVector->data.fl[i];
+			if((float)((int)FeatureVector->data.fl[i]) == FeatureVector->data.fl[i])
+				s << std::left << std::setw(4) << FeatureVector->data.fl[i];
+			else
+				s << std::left << std::setprecision(3) << std::setw(3) << FeatureVector->data.fl[i];
 
 			if(i!=NumberOfFeatures-1)
-				s << ", ";
+				s << ",";
 		}
 		s << ")";
 		std::cout << std::left << std::setw(22) << s.str();
