@@ -18,6 +18,7 @@ int main(int argc, char* argv[])
 	bool enableEvaluation = false;
 	bool printClassesParameters = false;
 	bool testMode = false;
+	bool enableTesting = false;
 	int k = 4;
 	int n = -1;	//N
 
@@ -69,7 +70,20 @@ int main(int argc, char* argv[])
 							}
 							j += 2 + argument.substr(j+2).length();
 						}
+						break;
 					case 'r':
+						if(argument.length() > j+2)
+						{
+							if(!ifstream(argument.substr(j+2).c_str()))
+							{
+								cout << "Error: Testing data file dosen't exists." << endl;
+								return 1;
+							}
+							testingFilename = argument.substr(j+2);
+							j += 2 + argument.substr(j+2).length();
+						}
+						break;
+					case 't':
 						if(argument.length() > j+2)
 						{
 							if((r = atoi(argument.substr(j+2).c_str()))==0)
@@ -78,7 +92,9 @@ int main(int argc, char* argv[])
 								return 1;
 							}
 							j += 2 + argument.substr(j+2).length();
+							enableTesting = true;
 						}
+						break;
 					case 'e':
 						enableEvaluation = true;
 						break;
@@ -90,31 +106,18 @@ int main(int argc, char* argv[])
 			}
 		}
 
-		if(!testMode)
-		{
-			trainingDataFilename = string(argv[argc-2]);
-			testingFilename = string(argv[argc-1]);
-		}
-		else
-		{
-			trainingDataFilename = string(argv[argc-1]);
-		}
+		trainingDataFilename = string(argv[argc-1]);
 
 		if(!ifstream(trainingDataFilename.c_str()))
 		{
 			cout << "Error: Training data file dosen't exists." << endl;
 			return 1;
 		}
-		if(!testMode && !ifstream(testingFilename.c_str()))
-		{
-			cout << "Error: Testing data file dosen't exists." << endl;
-			return 1;
-		}
 	}
 	
-	if(trainingDataFilename.compare("") == 0 || (!testMode && testingFilename.compare("") == 0))
+	if(trainingDataFilename.compare("") == 0 )
 	{
-		cout << "Error: Must provide training and testing data file." << endl;
+		cout << "Error: Must provide training data file." << endl;
 		return 1;
 	}
 
@@ -140,51 +143,56 @@ int main(int argc, char* argv[])
 
 		Classifier* classifiers[2] = { &bc, &nc };
 
-		// Begin classify
-		cout << "===Testing===" <<endl <<endl;
-		vector<FeatureData>& testData = *ttlTrainingData.ReadTestData(testingFilename);
-		double* probability = new double[ttlTrainingData.Classes.size()];
-		for(int classifierID = 0; classifierID < 2; classifierID++)
+		if(enableTesting)
 		{
-			Classifier& classifier = *classifiers[classifierID];
-
-			cout << endl << classifierID+1 << ". Using " << classifier.GetName() << endl << endl;
-
-			classifier.SetClasses(&trainingData.Classes[0], trainingData.Classes.size());
-			classifier.Train(&trainingData.Data[0], trainingData.Data.size());
-
-			if(printClassesParameters)
-				classifier.Print();
-
-			cout << "Classification Results" << endl;
-			cout << "-------------------------------------------------" << endl;
-			cout << left << setw(22) << "Feature Vector";
-			cout << right << setw(5) << "Class"; 
-			for(int j=0; j<trainingData.Classes.size(); j++)
+			// Begin classify
+			cout << "===Testing===" <<endl <<endl;
+			vector<FeatureData>& testData = *ttlTrainingData.ReadTestData(testingFilename);
+			double* probability = new double[ttlTrainingData.Classes.size()];
+			for(int classifierID = 0; classifierID < 2; classifierID++)
 			{
-				//cout.width(5);
-				cout << left << "   P(" << j+1 << ")";
-			}
-			cout << endl;
-			cout << "-------------------------------------------------" << endl;
-			for(int i=0; i<testData.size(); i++)
-			{
-				FeatureData& x = testData[i];
-				int classId = classifier.Classify(x, probability);
-				x.Print();
-				cout << right << setw(5) << classId << "   " ;
+				Classifier& classifier = *classifiers[classifierID];
+
+				cout << endl << classifierID+1 << ". Using " << classifier.GetName() << endl << endl;
+
+				classifier.SetClasses(&trainingData.Classes[0], trainingData.Classes.size());
+				classifier.Train(&trainingData.Data[0], trainingData.Data.size());
+
+				if(printClassesParameters)
+					classifier.Print();
+
+				cout << "Classification Results" << endl;
+				cout << "-------------------------------------------------" << endl;
+				cout << left << setw(22) << "Feature Vector";
+				cout << right << setw(5) << "Class"; 
 				for(int j=0; j<trainingData.Classes.size(); j++)
 				{
-					cout << left << setw(7) << fixed  << setprecision(3)  << probability[j];
+					//cout.width(5);
+					cout << left << "   P(" << j+1 << ")";
 				}
 				cout << endl;
+				cout << "-------------------------------------------------" << endl;
+				for(int i=0; i<testData.size(); i++)
+				{
+					FeatureData& x = testData[i];
+					int classId = classifier.Classify(x, probability);
+					
+					x.Print();
+					cout << right << setw(5) << ttlTrainingData.Classes[classId-1].Label << "   " ;
+					for(int j=0; j<trainingData.Classes.size(); j++)
+					{
+						cout << left << setw(7) << fixed  << setprecision(3)  << probability[j];
+					}
+					cout << endl;
+				}
+				cout << "-------------------------------------------------" << endl;
+
+				cout <<endl;
 			}
-			cout << "-------------------------------------------------" << endl;
-
-			cout <<endl;
+			delete[] probability;
+			testData.clear();
+			delete &testData;
 		}
-		delete[] probability;
-
 		if(enableEvaluation)
 		{
 			cout << "===Evaluation===" << endl << endl;
@@ -205,8 +213,7 @@ int main(int argc, char* argv[])
 			}
 		}
 
-		testData.clear();
-		delete &testData;
+		
 	}
 	else
 	{

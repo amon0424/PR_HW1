@@ -19,7 +19,7 @@ void NaiveBayesClassifier::Print()
 	{
 		Class& c = _classes[i];
 
-		std::cout << "Class " << c.ID << std::endl;
+		std::cout << "Class " << c.ID << ": " << c.Label << std::endl;
 		std::cout << "-------" << std::endl;
 		std::cout << "Probability: " << c.Probability << std::endl;
 
@@ -51,6 +51,7 @@ void NaiveBayesClassifier::SetClasses(const Class* classes, int count)
 	for(int i=0; i<count; i++)
 	{
 		Class c(classes[i].ID);
+		c.Label = classes[i].Label;
 		_classes.push_back(c);
 
 		_classesPdfs.push_back(std::vector<GaussianPdf>());

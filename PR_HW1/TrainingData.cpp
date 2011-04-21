@@ -3,33 +3,25 @@
 #include "FeatureData.h"
 #include <ctime>
 #include <vector>
-TrainingData::TrainingData(FeatureData** data, int count)
+TrainingData::TrainingData(Class* classes, int numberOfClasses, FeatureData** data, int count)
 {
 	srand(time(0));
 	if(count > 0)
 	{
 		NumberOfFeatures = (*data[0]).NumberOfFeatures;
-		
-		int maxClass = 0;
-		for(int i=0; i<count; i++)
-		{
-			FeatureData* x = data[i];
-			this->Data.push_back(*x);
-			if((*x).ClassID > maxClass)
-				maxClass = (*x).ClassID;
-		}
-
-		NumberOfClasses = maxClass;
+		NumberOfClasses = numberOfClasses;
 
 		for(int i=0; i<NumberOfClasses; i++)
 		{
 			Class c = Class(i+1);
+			c.Label = classes[i].Label;
 			Classes.push_back(c);
 		}
 
 		for(int i=0; i<count; i++)
 		{
 			FeatureData* x = data[i];
+			this->Data.push_back(*x);
 			this->Classes[x->ClassID-1].TrainingData.push_back(x);
 		}
 
@@ -90,7 +82,7 @@ TrainingData TrainingData::PickRandomData(int n)
 		}
 	}
 
-	return TrainingData(&trainingData[0], n);
+	return TrainingData(&this->Classes[0], this->Classes.size(), &trainingData[0], n);
 }
 void TrainingData::ReadFile(std::string filename)
 {
@@ -106,7 +98,9 @@ void TrainingData::ReadFile(std::string filename)
 	}
 
 	int tmp;
-	inputFile >> tmp >> tmp >> tmp;
+	std::getline(inputFile, line);
+	std::getline(inputFile, line);
+	std::getline(inputFile, line);
 	std::getline(inputFile, line);
 
 	int totalData = 0;
@@ -126,12 +120,26 @@ void TrainingData::ReadFile(std::string filename)
 				break;
 			}
 
-			lineStream >> featureData.FeatureVector->data.fl[i];
+			float value;
+			lineStream >> value;
+			featureData.FeatureVector->data.fl[i] = value;
 		}
 		if(readEnd)
 			break;
 
-		lineStream >> featureData.ClassID;
+		std::string classLabel;
+		lineStream >> classLabel;
+
+		//find class id
+		std::map<std::string,int>::iterator it;
+		if((it=this->MapClassLabelToID.find(classLabel)) != this->MapClassLabelToID.end())
+			featureData.ClassID = (*it).second;
+		else
+		{
+			featureData.ClassID = this->MapClassLabelToID.size() + 1;
+			this->MapClassLabelToID[classLabel] = featureData.ClassID;
+			this->Classes[featureData.ClassID-1].Label = classLabel;
+		}
 
 		this->Data.push_back(featureData);
 		this->Classes[featureData.ClassID-1].TrainingData.push_back(&this->Data.back());

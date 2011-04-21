@@ -85,8 +85,8 @@ float Evaluator::CrossValidate(Classifier& classifier, int k)
 				if(this->EnableOutput)
 				{
 					x.Print();
-					cout << right << setw(9) << classId ;
-					cout << right << setw(9) << x.ClassID <<endl;
+					cout << right << setw(9) << _trainingData->Classes[classId-1].Label ;
+					cout << right << setw(9) << _trainingData->Classes[x.ClassID-1].Label <<endl;
 				}
 				cvmSet(confusionMat, x.ClassID-1, classId-1, cvmGet(confusionMat, x.ClassID-1, classId-1) + 1);
 			}
@@ -141,8 +141,8 @@ float Evaluator::ResubstitutionValidate(Classifier& classifier)
 			if(this->EnableOutput)
 			{
 				x.Print();
-				cout << right << setw(9) << classId ;
-				cout << right << setw(9) << x.ClassID <<endl;
+				cout << right << setw(9) << _trainingData->Classes[classId-1].Label ;
+				cout << right << setw(9) <<_trainingData->Classes[x.ClassID-1].Label <<endl;
 			}
 			cvmSet(confusionMat, x.ClassID-1, classId-1, cvmGet(confusionMat, x.ClassID-1, classId-1) + 1);
 		}
