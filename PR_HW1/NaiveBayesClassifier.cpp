@@ -135,15 +135,15 @@ void NaiveBayesClassifier::Train(const FeatureData* trainingData, int count)
 	}
 }
 
-int NaiveBayesClassifier::Classify(const FeatureData& x, float* probability) const
+int NaiveBayesClassifier::Classify(const FeatureData& x, double* probability) const
 {
-	float max = 0;
+	double max = 0;
 	int maxClass = NULL;
 	FeatureData tmpX(1);
 
 	for(int i=0;i<_classes.size(); i++)
 	{
-		float p = 1;
+		double p = 1;
 
 		for(int j=0; j<NumberOfFeatures; j++)
 		{
@@ -151,10 +151,11 @@ int NaiveBayesClassifier::Classify(const FeatureData& x, float* probability) con
 
 			tmpX.FeatureVector->data.fl[0] = x.FeatureVector->data.fl[j];
 			p *= pdf.GetProbability(tmpX);
-			probability[j] = p;
 		}
 
 		p *= _classes[i].Probability;
+		if(probability != NULL)
+			probability[i] = p;
 
 		if( p > max)
 		{

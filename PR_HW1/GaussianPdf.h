@@ -18,6 +18,6 @@ public:
 	GaussianPdf& operator=(const GaussianPdf& x);
 	~GaussianPdf();
 
-	float GetProbability(const FeatureData& x) const;
+	double GetProbability(const FeatureData& x) const;
 };
 #endif

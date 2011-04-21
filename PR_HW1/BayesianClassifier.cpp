@@ -110,19 +110,21 @@ void BayesianClassifier::Train(const FeatureData* trainingData, int count)
 	}
 }
 
-int BayesianClassifier::Classify(const FeatureData& x) const
+int BayesianClassifier::Classify(const FeatureData& x, double* probability) const
 {
-	float max = 0;
+	double max = 0;
 	int maxClass = NULL;
 
 	for(int i=0;i<_classes.size(); i++)
 	{
-		float p = _classesPdf[i].GetProbability(x) * _classes[i].Probability;
+		double p = _classesPdf[i].GetProbability(x) * _classes[i].Probability;
 		if( p > max)
 		{
 			max = p;
 			maxClass = i;
 		}
+		if(probability != NULL)
+			probability[i] = p;
 	}
 
 	return maxClass + 1;

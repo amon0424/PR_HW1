@@ -143,6 +143,7 @@ int main(int argc, char* argv[])
 		// Begin classify
 		cout << "===Testing===" <<endl <<endl;
 		vector<FeatureData>& testData = *ttlTrainingData.ReadTestData(testingFilename);
+		double* probability = new double[ttlTrainingData.Classes.size()];
 		for(int classifierID = 0; classifierID < 2; classifierID++)
 		{
 			Classifier& classifier = *classifiers[classifierID];
@@ -156,21 +157,33 @@ int main(int argc, char* argv[])
 				classifier.Print();
 
 			cout << "Classification Results" << endl;
-			cout << "---------------------------" << endl;
+			cout << "-------------------------------------------------" << endl;
 			cout << left << setw(22) << "Feature Vector";
-			cout << right << setw(5) << "Class" <<endl;
-			cout << "---------------------------" << endl;
+			cout << right << setw(5) << "Class"; 
+			for(int j=0; j<trainingData.Classes.size(); j++)
+			{
+				//cout.width(5);
+				cout << left << "   P(" << j+1 << ")";
+			}
+			cout << endl;
+			cout << "-------------------------------------------------" << endl;
 			for(int i=0; i<testData.size(); i++)
 			{
 				FeatureData& x = testData[i];
-				int classId = classifier.Classify(x);
+				int classId = classifier.Classify(x, probability);
 				x.Print();
-				cout << right << setw(5) << classId <<endl;
+				cout << right << setw(5) << classId << "   " ;
+				for(int j=0; j<trainingData.Classes.size(); j++)
+				{
+					cout << left << setw(7) << fixed  << setprecision(3)  << probability[j];
+				}
+				cout << endl;
 			}
-			cout << "---------------------------" << endl;
+			cout << "-------------------------------------------------" << endl;
 
 			cout <<endl;
 		}
+		delete[] probability;
 
 		if(enableEvaluation)
 		{
@@ -180,7 +193,7 @@ int main(int argc, char* argv[])
 
 			for(int ci=0; ci<2; ci++)
 			{
-				cout << ci << ". " << (*classifiers[ci]).GetName() << endl;
+				cout << ci+1 << ". " << (*classifiers[ci]).GetName() << endl;
 				//Resubstitution Validation
 				cout << "Resubstitution Validation" <<endl;
 				evaluator.ResubstitutionValidate(*classifiers[ci]);

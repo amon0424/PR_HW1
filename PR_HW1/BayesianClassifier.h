@@ -24,7 +24,7 @@ public:
 	void Reset();
 	void SetClasses(const Class* classes, int count);
 	void Train(const FeatureData* trainingData, int count);
-	int Classify(const FeatureData& x) const;
+	int Classify(const FeatureData& x, double* probability) const;
 };
 
 #endif

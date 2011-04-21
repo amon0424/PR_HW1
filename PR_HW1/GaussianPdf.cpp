@@ -1,7 +1,7 @@
 #include "GaussianPdf.h"
 #include "FeatureData.h"
 #include <opencv/cv.h>
-
+#include <limits>
 GaussianPdf::GaussianPdf(int dimension)
 {
 	this->Dimension = dimension;
@@ -44,7 +44,7 @@ GaussianPdf::~GaussianPdf()
 	cvReleaseMat(&CovarianceMatrix);
 }
 
-float GaussianPdf::GetProbability(const FeatureData& x) const
+double GaussianPdf::GetProbability(const FeatureData& x) const
 {
 	float l = this->Dimension;
 	float det = cvDet(this->CovarianceMatrix);
@@ -74,5 +74,8 @@ float GaussianPdf::GetProbability(const FeatureData& x) const
 	cvReleaseMat(&invCovariance);
 	cvReleaseMat(&tmp);
 
+	if(p < DBL_MIN)
+		p=0;
+	
 	return p;
 }
