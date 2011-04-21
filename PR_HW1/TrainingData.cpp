@@ -22,7 +22,21 @@ TrainingData::TrainingData(FeatureData** data, int count)
 		NumberOfClasses = maxClass;
 
 		for(int i=0; i<NumberOfClasses; i++)
-			Classes.push_back(Class(i+1));
+		{
+			Class c = Class(i+1);
+			Classes.push_back(c);
+		}
+
+		for(int i=0; i<count; i++)
+		{
+			FeatureData* x = data[i];
+			this->Classes[x->ClassID-1].TrainingData.push_back(x);
+		}
+
+		for(int i=0; i<NumberOfClasses; i++)
+		{
+			this->Classes[i].Probability = this->Classes[i].TrainingData.size() / (float)count;
+		}
 	}
 }
 TrainingData TrainingData::PickRandomData(int n)
@@ -34,20 +48,46 @@ TrainingData TrainingData::PickRandomData(int n)
 	}
 
 	std::vector<FeatureData*> tmpTrainingData;
+	std::vector<FeatureData*>* trainingDataOfClasses = new std::vector<FeatureData*>[this->Classes.size()];
+	
+
 	for(int i=0; i<this->Data.size() ; i++)
 	{
 		tmpTrainingData.push_back(&this->Data[i]);
+		trainingDataOfClasses[this->Data[i].ClassID-1].push_back(&this->Data[i]);
+	}
+
+	// decide the pick number of each classes
+	int* pickNumberOfClasses = new int[this->Classes.size()];
+	int remain = n;
+
+	for(int i=0;i<this->Classes.size(); i++)
+	{
+		pickNumberOfClasses[i] = n * this->Classes[i].Probability;
+		remain -= pickNumberOfClasses[i];
+	}
+
+	int tmp = 0;
+	while(remain > 0)
+	{
+		pickNumberOfClasses[tmp]++;
+		remain--;
+		tmp = (tmp+1) % this->Classes.size();
 	}
 
 	std::vector<FeatureData*> trainingData;
-	//srand(time(0));
-	// shuffle training data
-	for(int i=0; i<n ; i++)
-	{
-		int r = i + (rand() % (tmpTrainingData.size()-i));
+	
 
-		trainingData.push_back(tmpTrainingData[r]);
-		tmpTrainingData[r] = tmpTrainingData[i];
+	// shuffle training data
+	for(int c=0; c<this->Classes.size(); c++)
+	{
+		for(int i=0; i<pickNumberOfClasses[c] ; i++)
+		{
+			int r = i + (rand() % (trainingDataOfClasses[c].size()-i));
+
+			trainingData.push_back(trainingDataOfClasses[c][r]);
+			trainingDataOfClasses[c][r] = trainingDataOfClasses[c][i];
+		}
 	}
 
 	return TrainingData(&trainingData[0], n);
@@ -94,7 +134,14 @@ void TrainingData::ReadFile(std::string filename)
 		lineStream >> featureData.ClassID;
 
 		this->Data.push_back(featureData);
+		this->Classes[featureData.ClassID-1].TrainingData.push_back(&this->Data.back());
+
 		totalData++;
+	}
+
+	for(int i=0; i < NumberOfClasses; i++)
+	{
+		this->Classes[i].Probability = this->Classes[i].TrainingData.size() / (float)totalData;
 	}
 }
 

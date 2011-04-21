@@ -23,6 +23,7 @@ void BayesianClassifier::Print()
 
 		std::cout << "Class " << c.ID << std::endl;
 		std::cout << "-------" << std::endl;
+		std::cout << "Probability: " << c.Probability << std::endl;
 		std::cout << "Mean: " << std::endl;
 		Utility::PrintMatrix(pdf.Mean, NumberOfFeatures, 1);
 		std::cout << "Covariance: " << std::endl;
@@ -37,7 +38,8 @@ void BayesianClassifier::SetClasses(const Class* classes, int count)
 
 	for(int i=0; i<count; i++)
 	{
-		_classes.push_back(classes[i]);
+		Class c(classes[i].ID);
+		_classes.push_back(c);
 		_classesPdf.push_back(GaussianPdf(this->NumberOfFeatures));
 	}
 }

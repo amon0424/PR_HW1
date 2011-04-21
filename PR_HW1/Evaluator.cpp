@@ -60,6 +60,8 @@ float Evaluator::CrossValidate(Classifier& classifier, int k)
 	for(int i=0; i<k; i++)
 	{
 		classifier.SetClasses(&_trainingData->Classes[0], _trainingData->Classes.size());
+
+		//training
 		for(int j=(i+1)%k; j!=i; j=(j+1)%k)
 		{
 			vector<FeatureData> estimationSubset = subsets[j];

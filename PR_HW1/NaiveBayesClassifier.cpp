@@ -21,6 +21,7 @@ void NaiveBayesClassifier::Print()
 
 		std::cout << "Class " << c.ID << std::endl;
 		std::cout << "-------" << std::endl;
+		std::cout << "Probability: " << c.Probability << std::endl;
 
 		for(int j=0; j < _classesPdfs[i].size(); j++)
 		{
@@ -49,7 +50,8 @@ void NaiveBayesClassifier::SetClasses(const Class* classes, int count)
 
 	for(int i=0; i<count; i++)
 	{
-		_classes.push_back(classes[i]);
+		Class c(classes[i].ID);
+		_classes.push_back(c);
 
 		_classesPdfs.push_back(std::vector<GaussianPdf>());
 		for(int j=0; j<NumberOfFeatures; j++)
@@ -133,7 +135,7 @@ void NaiveBayesClassifier::Train(const FeatureData* trainingData, int count)
 	}
 }
 
-int NaiveBayesClassifier::Classify(const FeatureData& x) const
+int NaiveBayesClassifier::Classify(const FeatureData& x, float* probability) const
 {
 	float max = 0;
 	int maxClass = NULL;
@@ -149,6 +151,7 @@ int NaiveBayesClassifier::Classify(const FeatureData& x) const
 
 			tmpX.FeatureVector->data.fl[0] = x.FeatureVector->data.fl[j];
 			p *= pdf.GetProbability(tmpX);
+			probability[j] = p;
 		}
 
 		p *= _classes[i].Probability;
