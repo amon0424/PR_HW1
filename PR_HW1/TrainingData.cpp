@@ -80,12 +80,13 @@ void TrainingData::ReadFile(std::string filename)
 
 		for(int i=0; i<this->NumberOfFeatures; i++)
 		{
-			lineStream >> featureData.FeatureVector->data.fl[i];
 			if(lineStream.eof())
 			{
 				readEnd = true;
 				break;
 			}
+
+			lineStream >> featureData.FeatureVector->data.fl[i];
 		}
 		if(readEnd)
 			break;
@@ -118,12 +119,13 @@ std::vector<FeatureData>* TrainingData::ReadTestData(std::string filename)
 		FeatureData featureData(NumberOfFeatures);
 		for(int i=0; i<this->NumberOfFeatures; i++)
 		{
-			lineStream >> featureData.FeatureVector->data.fl[i];
 			if(lineStream.eof())
 			{
 				readEnd = true;
 				break;
 			}
+
+			lineStream >> featureData.FeatureVector->data.fl[i];
 		}
 		if(readEnd)
 			break;
