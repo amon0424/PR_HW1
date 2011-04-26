@@ -172,7 +172,7 @@ int main(int argc, char* argv[])
 				for(int j=0; j<trainingData.Classes.size(); j++)
 				{
 					//cout.width(5);
-					cout << left << "   P(" << j+1 << ")";
+					cout << left << "   P(" <<  trainingData.Classes[j].Label << ")";
 				}
 				cout << endl;
 				cout << "-------------------------------------------------" << endl;

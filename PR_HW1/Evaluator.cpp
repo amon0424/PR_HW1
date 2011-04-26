@@ -49,7 +49,7 @@ float Evaluator::CrossValidate(Classifier& classifier, int k)
 	Utility::ZeroMatrix(confusionMat, _trainingData->NumberOfClasses, _trainingData->NumberOfClasses);
 	int correct = 0;
 	std::string hozLine;
-	for(int i=0; i< 5 * this->_trainingData->NumberOfFeatures + 20; i++)
+	for(int i=0; i< 5 * this->_trainingData->NumberOfFeatures + 20 + 7*_trainingData->Classes.size(); i++)
 		hozLine += "-";
 
 	if(this->EnableOutput)
@@ -58,7 +58,12 @@ float Evaluator::CrossValidate(Classifier& classifier, int k)
 		cout << hozLine << endl;
 		cout << left << setw(5 * this->_trainingData->NumberOfFeatures + 2) << "Feature Vector";
 		cout << right << setw(9) << "Incorrect";
-		cout << right << setw(9) << "Correct" <<endl;
+		cout << right << setw(9) << "Correct";
+		for(int j=0; j<_trainingData->Classes.size(); j++)
+		{
+			cout << left << "   P(" <<  _trainingData->Classes[j].Label << ")";
+		}
+		cout << endl;
 		cout << hozLine << endl;
 	}
 	for(int i=0; i<k; i++)
@@ -74,10 +79,11 @@ float Evaluator::CrossValidate(Classifier& classifier, int k)
 
 		//testing
 		vector<FeatureData> testingSubset = subsets[i];
+		double* probability = new double[_trainingData->Classes.size()];
 		for(int j=0; j<testingSubset.size(); j++)
 		{
 			FeatureData& x = testingSubset[j];
-			int classId = classifier.Classify(x);
+			int classId = classifier.Classify(x, probability);
 
 			if(classId == x.ClassID)
 			{
@@ -90,11 +96,17 @@ float Evaluator::CrossValidate(Classifier& classifier, int k)
 				{
 					x.Print();
 					cout << right << setw(9) << _trainingData->Classes[classId-1].Label ;
-					cout << right << setw(9) << _trainingData->Classes[x.ClassID-1].Label <<endl;
+					cout << right << setw(9) << _trainingData->Classes[x.ClassID-1].Label;
+					for(int k=0; k<_trainingData->Classes.size(); k++)
+					{
+						cout << right << setw(7) << fixed  << setprecision(3)  << probability[k];
+					}
+					cout << endl;
 				}
 				cvmSet(confusionMat, x.ClassID-1, classId-1, cvmGet(confusionMat, x.ClassID-1, classId-1) + 1);
 			}
 		}
+		delete[] probability;
 	}
 	if(this->EnableOutput)
 	{
@@ -122,21 +134,28 @@ float Evaluator::ResubstitutionValidate(Classifier& classifier)
 	Utility::ZeroMatrix(confusionMat, _trainingData->NumberOfClasses, _trainingData->NumberOfClasses);
 
 	std::string hozLine;
-	for(int i=0; i< 5 * this->_trainingData->NumberOfFeatures + 20; i++)
+	for(int i=0; i< 5 * this->_trainingData->NumberOfFeatures + 20 + 7*_trainingData->Classes.size(); i++)
 		hozLine += "-";
+
 	if(this->EnableOutput)
 	{
 		cout << "Incorrect Classification Results" << endl;
 		cout << hozLine << endl;
 		cout << left << setw(5 * this->_trainingData->NumberOfFeatures + 2) << "Feature Vector";
 		cout << right << setw(9) << "Incorrect";
-		cout << right << setw(9) << "Correct" <<endl;
+		cout << right << setw(9) << "Correct";
+		for(int j=0; j<_trainingData->Classes.size(); j++)
+		{
+			cout << left << "   P(" << _trainingData->Classes[j].Label << ")";
+		}
+		cout<< endl;
 		cout << hozLine << endl;
 	}
+	double* probability = new double[_trainingData->Classes.size()];
 	for(int j=0; j<_trainingData->Data.size(); j++)
 	{
 		FeatureData& x = _trainingData->Data[j];
-		int classId = classifier.Classify(x);
+		int classId = classifier.Classify(x, probability);
 
 		if(classId == x.ClassID)
 		{
@@ -149,11 +168,17 @@ float Evaluator::ResubstitutionValidate(Classifier& classifier)
 			{
 				x.Print();
 				cout << right << setw(9) << _trainingData->Classes[classId-1].Label ;
-				cout << right << setw(9) <<_trainingData->Classes[x.ClassID-1].Label <<endl;
+				cout << right << setw(9) <<_trainingData->Classes[x.ClassID-1].Label;
+				for(int k=0; k<_trainingData->Classes.size(); k++)
+				{
+					cout << right << setw(7) << fixed  << setprecision(3)  << probability[k];
+				}
+				cout << endl;
 			}
 			cvmSet(confusionMat, x.ClassID-1, classId-1, cvmGet(confusionMat, x.ClassID-1, classId-1) + 1);
 		}
 	}
+	delete[] probability;
 	if(this->EnableOutput)
 	{
 		cout << hozLine << endl;

@@ -76,6 +76,7 @@ double GaussianPdf::GetProbability(const FeatureData& x) const
 
 	if(p < DBL_MIN)
 		p=0;
-	
+	if(p != p)	// check nan
+		p=0;
 	return p;
 }

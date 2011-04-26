@@ -119,6 +119,7 @@ int BayesianClassifier::Classify(const FeatureData& x, double* probability) cons
 	for(int i=0;i<_classes.size(); i++)
 	{
 		double p = _classesPdf[i].GetProbability(x) * _classes[i].Probability;
+		
 		if( p > max)
 		{
 			max = p;
