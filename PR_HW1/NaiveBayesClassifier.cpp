@@ -3,6 +3,8 @@
 #include <iomanip>
 #include "Utility.h"
 
+using namespace std;
+
 NaiveBayesClassifier::~NaiveBayesClassifier()
 {
 	for(int i=0; i < _classesPdfs.size(); i++)
@@ -67,11 +69,14 @@ void NaiveBayesClassifier::Train(const FeatureData* trainingData, int count)
 	{
 		Class& c = _classes[i];
 
-		for(int j=0; j<NumberOfFeatures; j++)
+		if(c.TrainingData.size() > 1)
 		{
-			GaussianPdf& pdf = _classesPdfs[i][j];
-			cvConvertScale(pdf.Mean, pdf.Mean, c.TrainingData.size());
-			cvConvertScale(pdf.CovarianceMatrix, pdf.CovarianceMatrix, c.TrainingData.size());
+			for(int j=0; j<NumberOfFeatures; j++)
+			{
+				GaussianPdf& pdf = _classesPdfs[i][j];
+				cvConvertScale(pdf.Mean, pdf.Mean, c.TrainingData.size());
+				cvConvertScale(pdf.CovarianceMatrix, pdf.CovarianceMatrix, c.TrainingData.size());
+			}
 		}
 	}
 
@@ -85,6 +90,8 @@ void NaiveBayesClassifier::Train(const FeatureData* trainingData, int count)
 	int totalTrainingData = 0;
 	float tmpData = 0;
 	CvMat tmpX = cvMat(1, 1, CV_32FC1, &tmpData);
+	CvMat* xMinusMean = cvCreateMat(1, 1, CV_32FC1);
+	CvMat* xMinusMeanT = cvCreateMat(1, 1, CV_32FC1);
 
 	for(int i=0; i<_classes.size(); i++)
 	{
@@ -103,11 +110,13 @@ void NaiveBayesClassifier::Train(const FeatureData* trainingData, int count)
 
 				cvAdd(pdf.Mean, &tmpX, pdf.Mean);
 			}
-			cvConvertScale(pdf.Mean, pdf.Mean, 1.0 / c.TrainingData.size());
+			if(c.TrainingData.size() > 1)
+				cvConvertScale(pdf.Mean, pdf.Mean, 1.0 / c.TrainingData.size());
+
+			
 
 			// compute covariance matrix
-			CvMat* xMinusMean = cvCreateMat(1, 1, CV_32FC1);
-			CvMat* xMinusMeanT = cvCreateMat(1, 1, CV_32FC1);
+			
 
 			for(int k=0; k<newTrainingData.size(); k++)
 			{
@@ -118,15 +127,20 @@ void NaiveBayesClassifier::Train(const FeatureData* trainingData, int count)
 				cvTranspose(xMinusMean, xMinusMeanT);
 				cvMatMulAdd(xMinusMean, xMinusMeanT,  pdf.CovarianceMatrix,  pdf.CovarianceMatrix);
 			}
-			cvConvertScale(pdf.CovarianceMatrix, pdf.CovarianceMatrix, 1.0 / c.TrainingData.size());
+			if(c.TrainingData.size() > 1)
+				cvConvertScale(pdf.CovarianceMatrix, pdf.CovarianceMatrix, 1.0 / c.TrainingData.size());
 
-			// release matrix
-			cvReleaseMat(&xMinusMean);
-			cvReleaseMat(&xMinusMeanT);
+			//cout << "class" << i+1 <<"x" <<j << " mean:" << pdf.Mean->data.fl[0] << " cov:" << pdf.CovarianceMatrix->data.fl[0] << endl;
+
+			
 		}
+		
 		totalTrainingData += c.TrainingData.size();
 
 	}
+	// release matrix
+	cvReleaseMat(&xMinusMean);
+	cvReleaseMat(&xMinusMeanT);
 
 
 	for(int i=0; i<_classes.size(); i++)
@@ -134,6 +148,8 @@ void NaiveBayesClassifier::Train(const FeatureData* trainingData, int count)
 		Class& c = _classes[i];
 		c.Probability = c.TrainingData.size() / (float)totalTrainingData;
 	}
+
+	delete[] newTrainingDataOfClasses;
 }
 
 int NaiveBayesClassifier::Classify(const FeatureData& x, double* probability) const

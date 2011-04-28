@@ -48,16 +48,20 @@ void BayesianClassifier::Train(const FeatureData* trainingData, int count)
 {
 	std::vector<const FeatureData*>* newTrainingDataOfClasses = new std::vector<const FeatureData*>[this->NumberOfFeatures]();
 
+	
 	for(int i=0; i<_classes.size(); i++)
 	{
 		Class& c = _classes[i];
-		GaussianPdf& pdf = _classesPdf[i];
-		//std::vector<const FeatureData*> oldTrainingData = _trainingDataOfClasses[i];
+		if(c.TrainingData.size() > 1)
+		{
+			GaussianPdf& pdf = _classesPdf[i];
+			//std::vector<const FeatureData*> oldTrainingData = _trainingDataOfClasses[i];
 
-		cvConvertScale(pdf.Mean, pdf.Mean, c.TrainingData.size());
-		cvConvertScale(pdf.CovarianceMatrix, pdf.CovarianceMatrix, c.TrainingData.size());
+			cvConvertScale(pdf.Mean, pdf.Mean, c.TrainingData.size());
+			cvConvertScale(pdf.CovarianceMatrix, pdf.CovarianceMatrix, c.TrainingData.size());
 
-		//newTrainingDataOfClasses.push_back(std::vector<FeatureData*>());
+			//newTrainingDataOfClasses.push_back(std::vector<FeatureData*>());
+		}
 	}
 
 	for(int i=0; i<count; i++)
@@ -81,7 +85,8 @@ void BayesianClassifier::Train(const FeatureData* trainingData, int count)
 
 			cvAdd(pdf.Mean, x->FeatureVector, pdf.Mean);
 		}
-		cvConvertScale(pdf.Mean, pdf.Mean, 1.0 / c.TrainingData.size());
+		if(c.TrainingData.size() > 1)
+			cvConvertScale(pdf.Mean, pdf.Mean, 1.0 / c.TrainingData.size());
 
 		// compute covariance matrix
 		CvMat* xMinusMean = cvCreateMat(NumberOfFeatures, 1, CV_32FC1);
@@ -94,7 +99,8 @@ void BayesianClassifier::Train(const FeatureData* trainingData, int count)
 			cvTranspose(xMinusMean, xMinusMeanT);
 			cvMatMulAdd(xMinusMean, xMinusMeanT,  pdf.CovarianceMatrix,  pdf.CovarianceMatrix);
 		}
-		cvConvertScale(pdf.CovarianceMatrix, pdf.CovarianceMatrix, 1.0 / c.TrainingData.size());
+		if(c.TrainingData.size() > 1)
+			cvConvertScale(pdf.CovarianceMatrix, pdf.CovarianceMatrix, 1.0 / c.TrainingData.size());
 
 		// release matrix
 		cvReleaseMat(&xMinusMean);
